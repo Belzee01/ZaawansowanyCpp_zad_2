@@ -2,12 +2,38 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-
+#include <list>
+#include "Task.h"
+#include "TasksContainer.h"
+#include "Process.h"
+#include "Communication.h"
 
 using namespace std;
 
 class TaskParser {
+private:
 
+public:
+    TaskParser() {}
+
+    void parse(ifstream &file, int tasks) {
+        list<Task<int>> tasksList;
+
+        string line;
+        getline(file, line);
+
+        int found;
+        stringstream ss;
+        ss << line;
+        string temp;
+        while (!ss.eof()) {
+            ss >> temp;
+            //if (stringstream(temp) >> found)
+                 //cout<<found;
+            cout<<temp << "\n";
+            temp = "";
+        }
+    }
 };
 
 class ProcParser {
@@ -25,10 +51,6 @@ class CostsParser {
 class CommParser {
 
 };
-
-constexpr unsigned int str2int(const char *str, int h = 0) {
-    return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
-}
 
 int extractInt(const string &str) {
     stringstream ss;
@@ -49,13 +71,16 @@ int main(int args, char **argv) {
     int tasks;
     int proc;
     int comm;
+
+    auto taskParser = new TaskParser();
+
     string line;
     ifstream myfile(argv[1]);
     if (myfile.is_open()) {
         while (getline(myfile, line)) {
             if (line.rfind("@tasks") != std::string::npos) {
                 tasks = extractInt(line);
-
+                taskParser->parse(myfile, tasks);
             }
             if (line.rfind("@proc") != std::string::npos) {
                 proc = extractInt(line);
