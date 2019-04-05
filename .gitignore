@@ -139,3 +139,9 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
+/.idea/vcs.xml
+/.idea/encodings.xml
+/.idea/misc.xml
+/CMakeLists.txt
+/.idea/modules.xml
+/.idea/zad2.iml
