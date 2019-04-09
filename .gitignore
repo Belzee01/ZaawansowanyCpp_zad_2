@@ -145,3 +145,4 @@ fabric.properties
 /CMakeLists.txt
 /.idea/modules.xml
 /.idea/zad2.iml
+!/CMakeLists.txt
