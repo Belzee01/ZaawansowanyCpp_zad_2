@@ -54,6 +54,22 @@ public:
         this->randomizeTimeAndCost();
     }
 
+    void setWeight(T weight) {
+        Task::weight = weight;
+    }
+
+    void setProc(const std::list<Process> &proc) {
+        Task::proc = proc;
+    }
+
+    void setTimes(T *times) {
+        Task::times = times;
+    }
+
+    void setCosts(T *costs) {
+        Task::costs = costs;
+    }
+
     int getId() const {
         return id;
     }

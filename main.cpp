@@ -29,6 +29,7 @@ public:
             ss << line;
 
             string temp;
+            tasksList[i].push_back(*new Task<T>(i));
             while (!ss.eof()) {
                 ss >> temp;
                 if (stringstream(temp) >> found) {
@@ -51,8 +52,8 @@ class ProcParser {
 public:
     ProcParser() {}
 
-    void *parse(ifstream &file, int proc) {
-        auto *procList = new std::list<Process>[proc];
+    std::list<Process> parse(ifstream &file, int proc) {
+        std::list<Process> procList;
 
         for (int i = 0; i < proc; ++i) {
             string line;
@@ -62,26 +63,38 @@ public:
             stringstream ss;
             ss << line;
 
-            string temp;
-            while (!ss.eof()) {
-                ss >> temp;
-                for (int j = 0; j < 3; ++j) {
-                    if (stringstream(temp) >> found) {
-                        ss >> temp;
-                        int value = -1;
-                        if (stringstream(temp) >> value)
-                            procList[i].push_back(new Process());
-                    }
-                    temp = "";
-                }
-            }
+            int cost = -1, bandwith = -1, type = -1;
+            ss >> cost >> bandwith >> type;
+            procList.push_back(*new Process(cost, bandwith, type));
+
         }
-        return new TasksContainer<T>(tasks, tasksList);
+        return procList;
     }
 };
 
 class TimesParser {
+public:
+    TimesParser() {}
 
+    template<typename T>
+    void parse(ifstream &file, int tasks, int proc, TasksContainer<T> *container) {
+
+        for (int i = 0; i < tasks; ++i) {
+            string line;
+            getline(file, line);
+
+            int found = -1;
+            stringstream ss;
+            ss << line;
+
+            int *times = new int[proc];
+
+            for (int j = 0; j < proc; ++j) {
+                ss >> times[i];
+            }
+            &((Task<T>) container->getTasks()[i][0]).setTimes(times);
+        }
+    }
 };
 
 class CostsParser {
@@ -114,6 +127,7 @@ int main(int args, char **argv) {
 
     auto taskParser = new TaskParser();
     auto procParser = new ProcParser();
+    auto timeParser = new TimesParser();
 
     TasksContainer<int> *taskContainer = nullptr;
 
@@ -128,7 +142,7 @@ int main(int args, char **argv) {
             if (line.rfind("@proc") != std::string::npos) {
                 proc = extractInt(line);
                 cout << "Proc: " << proc << endl;
-                procParser->
+                taskContainer->setProcesses(procParser->parse(myfile, proc));
             }
             if (line.rfind("@times") != std::string::npos) {
 
@@ -147,11 +161,23 @@ int main(int args, char **argv) {
     auto tasksAdjList = taskContainer->getTasks();
 
     for (int i = 0; i < tasks; ++i) {
-        cout << i << " :";
         for (auto &l: tasksAdjList[i]) {
             cout << l.getId() << ", ";
         }
         cout << endl;
     }
+    cout << endl;
+    for (auto &p : taskContainer->getProcesses()) {
+        cout << p.getInitialCost() << " " << p.getBandWith() << " " << p.getTypeOfProcess() << endl;
+    }
 
+    cout << endl;
+    for (int i = 0; i < tasks; ++i) {
+        for (auto &t: taskContainer->getTasks()[i]) {
+            for (int j = 0; j < proc; ++j) {
+                cout << t.getTimes()[j] << " ";
+            }
+        }
+        cout << endl;
+    }
 }

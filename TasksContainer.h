@@ -16,9 +16,11 @@ class TasksContainer {
 private:
     int numberOfTasks;
     std::list<Task<T>> *tasks;
+    std::list<Process> processes;
 
 public:
-    TasksContainer(int numberOfTasks, std::list<Process> proc, int **adjustmentMatrix) : numberOfTasks(numberOfTasks) {
+    TasksContainer(int numberOfTasks, const std::list<Process> &proc, int **adjustmentMatrix) : numberOfTasks(
+            numberOfTasks), processes(proc) {
         this->tasks = new std::list<Task<T>>[numberOfTasks];
 
         int id = 0;
@@ -36,6 +38,14 @@ public:
 
     list<Task<T>> *getTasks() {
         return tasks;
+    }
+
+    const list<Process> &getProcesses() const {
+        return processes;
+    }
+
+    void setProcesses(const list<Process> &processes) {
+        TasksContainer::processes = processes;
     }
 };
 
