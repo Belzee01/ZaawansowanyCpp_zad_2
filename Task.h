@@ -43,7 +43,9 @@ private:
 
 public:
 
-    Task(int id);
+    Task(int id) : id(id) {
+        this->weight = 0;
+    }
 
     Task(int id, const std::list<Process> &proc) : proc(proc), id(id) {
         this->costs = new T[proc.size()];

@@ -37,9 +37,30 @@ private:
 
 public:
 
+    Process() {
+        this->bandWith = -1;
+        this->initialCost = -1;
+        this->typeOfProcess = -1;
+    }
+
     Process(int typeOfProcess);
 
     Process(int initialCost, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess) {}
+
+    Process(int initialCost, int bandWith, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess),
+                                                                bandWith(bandWith) {}
+
+    void setInitialCost(int initialCost) {
+        Process::initialCost = initialCost;
+    }
+
+    void setBandWith(int bandWith) {
+        Process::bandWith = bandWith;
+    }
+
+    void setTypeOfProcess(int typeOfProcess) {
+        Process::typeOfProcess = typeOfProcess;
+    }
 
     int getInitialCost() const {
         return initialCost;

@@ -31,6 +31,9 @@ public:
         }
     }
 
+    TasksContainer(int numberOfTasks, std::list<Task<T>> *tasks) : numberOfTasks(numberOfTasks), tasks(tasks) {
+    }
+
     list<Task<T>> *getTasks() {
         return tasks;
     }
