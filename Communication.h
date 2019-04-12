@@ -15,6 +15,7 @@ using namespace std;
 class Communication {
 
 private:
+    int id;
     int cost;
     int capacity;
     int *procConnections;
@@ -26,7 +27,7 @@ public:
 
     explicit Communication(int procSize);
 
-    Communication(int cost, int capacity, int *procConnections, int procSize);
+    Communication(int id, int cost, int capacity, int *procConnections, int procSize);
 
     int getCost() const;
 
@@ -53,6 +54,16 @@ public:
             }
         }
     }
+
+    int getId() const;
+
+    void setId(int id);
+
+    void setCost(int cost);
+
+    void setCapacity(int capacity);
+
+    void setProcConnections(int *procConnections);
 };
 
 

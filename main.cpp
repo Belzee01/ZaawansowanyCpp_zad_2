@@ -133,6 +133,65 @@ public:
 
 class CommParser {
 
+public:
+    CommParser() {}
+
+    std::list<Communication> parse(ifstream &file, int comm, int proc) {
+        std::list<Communication> commList;
+
+        for (int i = 0; i < comm; ++i) {
+            string line;
+            getline(file, line);
+
+            int found = -1;
+            stringstream ss;
+            ss << line;
+
+            int *connections = new int[proc];
+            int cost;
+            int capacity;
+            int id;
+
+            string temp;
+            int k = 0;
+            int count = 0;
+            while (!ss.eof()) {
+                ss >> temp;
+                switch (count) {
+                    case 0: {
+                        if (stringstream(temp) >> found) {
+                            id = found;
+                        }
+                    }
+                        break;
+                    case 1: {
+                        if (stringstream(temp) >> found) {
+                            cost = found;
+                        }
+                    }
+                        break;
+                    case 2: {
+                        if (stringstream(temp) >> found) {
+                            capacity = found;
+                        }
+                    }
+                        break;
+                    default: {
+                        if (stringstream(temp) >> found) {
+                            connections[k++] = found;
+                        }
+                    }
+                        break;
+                }
+
+                temp = "";
+                count++;
+            }
+            commList.push_back(*new Communication(id, cost, capacity, connections, proc));
+
+        }
+        return commList;
+    }
 };
 
 int extractInt(const string &str) {
@@ -160,7 +219,7 @@ int main(int args, char **argv) {
     auto procParser = new ProcParser();
     auto timeParser = new TimesParser();
     auto costParser = new CostsParser();
-
+    auto commParser = new CommParser();
 
     TasksContainer *taskContainer = nullptr;
 
@@ -189,7 +248,7 @@ int main(int args, char **argv) {
             }
             if (line.rfind("@comm") != std::string::npos) {
                 comm = extractInt(line);
-                cout << "Comm: " << comm << endl;
+                taskContainer->setComm(commParser->parse(myfile, comm, proc));
             }
         }
         myfile.close();
@@ -225,6 +284,15 @@ int main(int args, char **argv) {
         cout << endl;
     }
     cout << endl;
+    auto comms = taskContainer->getComm();
+    for (auto &c: comms) {
+        cout << c.getId() << " " << c.getCost() << " " << c.getCapacity() << " ";
+        auto connections = c.getProcConnections();
+        for (int i = 0; i < proc; ++i) {
+            cout << connections[i] << " ";
+        }
+        cout << endl;
+    }
 
 
     delete[] taskArr;

@@ -10,6 +10,7 @@
 #define TEST_1_TASKSCONTAINER_H
 
 #include "Task.h"
+#include "Communication.h"
 #include "Process.h"
 #include <list>
 #include <map>
@@ -22,6 +23,7 @@ private:
     std::map<Task *, std::list<Task *>> tasks;
     std::list<Process> processes;
     Task *taskArr;
+    std::list<Communication> comm;
 
 public:
 
@@ -43,6 +45,14 @@ public:
 
     void setProcesses(const list<Process> &processes) {
         TasksContainer::processes = processes;
+    }
+
+    const list<Communication> &getComm() const {
+        return comm;
+    }
+
+    void setComm(const list<Communication> &comm) {
+        TasksContainer::comm = comm;
     }
 };
 
