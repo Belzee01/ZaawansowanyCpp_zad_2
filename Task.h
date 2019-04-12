@@ -11,15 +11,14 @@
 #include "Process.h"
 #include <list>
 
-template<typename T=int>
+
 class Task {
 private:
-    int id;
-    T weight;
+    int weight{};
 
     std::list<Process> proc;
-    T *times;
-    T *costs;
+    int *costs{};
+    int *times{};
 
 private:
     void randomizeTimeAndCost() {
@@ -42,19 +41,27 @@ private:
     }
 
 public:
+    int id{};
+
+public:
+    Task() = default;
 
     Task(int id) : id(id) {
         this->weight = 0;
     }
 
     Task(int id, const std::list<Process> &proc) : proc(proc), id(id) {
-        this->costs = new T[proc.size()];
-        this->times = new T[proc.size()];
+        this->costs = new int[proc.size()];
+        this->times = new int[proc.size()];
         this->weight = 0;
         this->randomizeTimeAndCost();
     }
 
-    void setWeight(T weight) {
+    void setId(int id) {
+        Task::id = id;
+    }
+
+    void setWeight(int weight) {
         Task::weight = weight;
     }
 
@@ -62,11 +69,11 @@ public:
         Task::proc = proc;
     }
 
-    void setTimes(T *times) {
+    void setTimes(int *times) {
         Task::times = times;
     }
 
-    void setCosts(T *costs) {
+    void setCosts(int *costs) {
         Task::costs = costs;
     }
 
@@ -74,22 +81,25 @@ public:
         return id;
     }
 
-    T getWeight() const {
-        return weight;
-    }
-
-    int getProc() const {
-        return proc;
-    }
-
-    T *getTimes() const {
+    int *getTimes() const {
         return times;
     }
 
-    T *getCosts() const {
+    int getWeight() const {
+        return weight;
+    }
+
+    int *getCosts() const {
         return costs;
     }
-};
 
+    bool operator()(const Task &lhs, const Task &rhs) const {
+        return lhs.id > rhs.id;
+    }
+
+    bool operator<(const Task &rhs) const {
+        return id < rhs.id;
+    }
+};
 
 #endif //TEST_1_TASK_H
