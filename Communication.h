@@ -15,17 +15,15 @@ using namespace std;
 class Communication {
 
 private:
-    int id;
-    int cost;
-    int capacity;
-    int *procConnections;
+    int id{};
+    int cost{};
+    int capacity{};
+    int *procConnections{};
 
-    int procSize;
+    int procSize{};
 
 public:
     Communication();
-
-    explicit Communication(int procSize);
 
     Communication(int id, int cost, int capacity, int *procConnections, int procSize);
 
@@ -36,34 +34,9 @@ public:
     int *getProcConnections() const;
 
 public:
-    static void coverNoConnections(Communication *comm, int commSize, int procSize) {
-        int *z = new int[procSize];
-        for (int k = 0; k < procSize; ++k) {
-            z[k] = 0;
-        }
-
-        for (int i = 0; i < commSize; ++i) {
-            for (int j = 0; j < procSize; ++j) {
-                z[j] += comm[i].procConnections[j];
-            }
-        }
-        for (int k = 0; k < procSize; ++k) {
-            if (z[k] == 0) {
-                int commIndex = rand() % commSize;
-                comm[commIndex].procConnections[k] = 1;
-            }
-        }
-    }
 
     int getId() const;
 
-    void setId(int id);
-
-    void setCost(int cost);
-
-    void setCapacity(int capacity);
-
-    void setProcConnections(int *procConnections);
 };
 
 

@@ -6,17 +6,6 @@
 
 Communication::Communication() = default;
 
-Communication::Communication(int procSize) : procSize(procSize) {
-
-    this->procConnections = new int[procSize];
-    this->capacity = rand() % 50 + 5;
-    this->cost = rand() % 20 + 5;
-
-    for (int i = 0; i < procSize; ++i) {
-        this->procConnections[i] = rand() % 2 + 0;
-    }
-}
-
 Communication::Communication(int id, int cost, int capacity, int *procConnections, int procSize) : id(id), cost(cost),
                                                                                                    capacity(capacity),
                                                                                                    procConnections(
@@ -37,21 +26,5 @@ int *Communication::getProcConnections() const {
 
 int Communication::getId() const {
     return id;
-}
-
-void Communication::setId(int id) {
-    Communication::id = id;
-}
-
-void Communication::setCost(int cost) {
-    Communication::cost = cost;
-}
-
-void Communication::setCapacity(int capacity) {
-    Communication::capacity = capacity;
-}
-
-void Communication::setProcConnections(int *procConnections) {
-    Communication::procConnections = procConnections;
 }
 

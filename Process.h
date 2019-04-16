@@ -9,28 +9,10 @@
 #include<cstdlib>
 #include<ctime>
 
-#define DEDICATED_MIN 800
-#define DEDICATED_MAX 1200
-
-#define UNIVERSAL_MIN 100
-#define UNIVERSAL_MAX 300
-
-#define DEDICATED_TIME_MIN 5
-#define DEDICATED_TIME_MAX 100
-
-#define UNIVERSAL_TIME_MIN 100
-#define UNIVERSAL_TIME_MAX 1000
-
-#define DEDICATED_COST_MIN 100
-#define DEDICATED_COST_MAX 1000
-
-#define UNIVERSAL_COST_MIN 5
-#define UNIVERSAl_COST_MAX 100
-
 class Process {
 private:
-    int initialCost;
-    int bandWith;
+    int initialCost{};
+    int startDelay{};
     int typeOfProcess; // 0 dedicated, 1 universal
 
 private:
@@ -38,29 +20,13 @@ private:
 public:
 
     Process() {
-        this->bandWith = -1;
+        this->startDelay = -1;
         this->initialCost = -1;
         this->typeOfProcess = -1;
     }
 
-    Process(int typeOfProcess);
-
-    Process(int initialCost, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess) {}
-
-    Process(int initialCost, int bandWith, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess),
-                                                                bandWith(bandWith) {}
-
-    void setInitialCost(int initialCost) {
-        Process::initialCost = initialCost;
-    }
-
-    void setBandWith(int bandWith) {
-        Process::bandWith = bandWith;
-    }
-
-    void setTypeOfProcess(int typeOfProcess) {
-        Process::typeOfProcess = typeOfProcess;
-    }
+    Process(int initialCost, int startDelay, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess),
+                                                                startDelay(startDelay) {}
 
     int getInitialCost() const {
         return initialCost;
@@ -70,39 +36,8 @@ public:
         return typeOfProcess;
     }
 
-    int getBandWith() const;
-
-public:
-    static int getDedicatedTimeMin() {
-        return DEDICATED_TIME_MIN;
-    }
-
-    static int getDedicatedTimeMax() {
-        return DEDICATED_TIME_MAX;
-    }
-
-    static int getUniversalTimeMin() {
-        return UNIVERSAL_TIME_MIN;
-    }
-
-    static int getUniversalTimeMax() {
-        return UNIVERSAL_TIME_MAX;
-    }
-
-    static int getDedicatedCostMin() {
-        return DEDICATED_COST_MIN;
-    }
-
-    static int getDedicatedCostMax() {
-        return DEDICATED_COST_MAX;
-    }
-
-    static int getUniversalCostMin() {
-        return UNIVERSAL_COST_MIN;
-    }
-
-    static int getUniversalCostMax() {
-        return UNIVERSAl_COST_MAX;
+    int getStartDelay() const {
+        return startDelay;
     }
 };
 
