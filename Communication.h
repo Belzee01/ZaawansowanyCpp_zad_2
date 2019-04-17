@@ -9,6 +9,7 @@
 #include <time.h>
 #include <iostream>
 #include <list>
+#include <vector>
 
 using namespace std;
 
@@ -18,20 +19,22 @@ private:
     int id{};
     int cost{};
     int capacity{};
-    int *procConnections{};
+    std::vector<int> procConnections;
 
     int procSize{};
 
 public:
     Communication();
 
-    Communication(int id, int cost, int capacity, int *procConnections, int procSize);
+    Communication(int id, int cost, int capacity, std::vector<int> procConnections, int procSize);
+
+    virtual ~Communication();
 
     int getCost() const;
 
     int getCapacity() const;
 
-    int *getProcConnections() const;
+    const vector<int> &getProcConnections() const;
 
 public:
 

@@ -24,7 +24,7 @@ private:
     std::map<Task *, std::list<Task *>> tasks;
     std::list<Process> processes;
     Task *taskArr;
-    std::list<Communication> comm;
+    std::vector<Communication> comm;
 
 public:
 
@@ -65,11 +65,11 @@ public:
         TasksContainer::procSize = procSize;
     }
 
-    const list<Communication> &getComm() const {
+    const vector<Communication> &getComm() const {
         return comm;
     }
 
-    void setComm(const list<Communication> &comm) {
+    void setComm(const vector<Communication> &comm) {
         TasksContainer::comm = comm;
     }
 

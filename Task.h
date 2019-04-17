@@ -28,6 +28,11 @@ public:
 public:
     Task() = default;
 
+    virtual ~Task() {
+        delete[] costs;
+        delete[] times;
+    }
+
     void setId(int id) {
         Task::id = id;
     }
@@ -50,6 +55,10 @@ public:
 
     int *getCosts() const {
         return costs;
+    }
+
+    const std::list<Process> &getProc() const {
+        return proc;
     }
 
     bool operator()(const Task &lhs, const Task &rhs) const {

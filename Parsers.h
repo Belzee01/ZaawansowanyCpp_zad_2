@@ -143,8 +143,8 @@ class CommParser {
 public:
     CommParser() = default;
 
-    std::list<Communication> parse(ifstream &file, int comm, int proc) {
-        std::list<Communication> commList;
+    std::vector<Communication> parse(ifstream &file, int comm, int proc) {
+        std::vector<Communication> commList;
 
         for (int i = 0; i < comm; ++i) {
             string line;
@@ -154,7 +154,7 @@ public:
             stringstream ss;
             ss << line;
 
-            int *connections = new int[proc];
+            std::vector<int> connections;
             int cost;
             int capacity;
             int id = -1;
@@ -186,8 +186,11 @@ public:
                     }
                         break;
                     default: {
-                        if (stringstream(temp) >> found) {
-                            connections[k++] = found;
+                        stringstream(temp) >> found;
+                        if (found != -1) {
+                            connections.push_back(found);
+                            ss.clear();
+                            found = -1;
                         }
                     }
                         break;
@@ -196,7 +199,7 @@ public:
                 temp = "";
                 count++;
             }
-            commList.push_back(*new Communication(id, cost, capacity, connections, proc));
+            commList.push_back(Communication(id, cost, capacity, connections, proc));
 
         }
         return commList;
