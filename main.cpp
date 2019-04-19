@@ -11,6 +11,7 @@
 #include "Communication.h"
 #include "Parsers.h"
 #include "TimesCostsMatrix.h"
+#include "GraphStepper.h"
 
 using namespace std;
 
@@ -36,4 +37,16 @@ int main(int args, char **argv) {
     //TODO do ktorych bedzie mozna kolejno do kazedgo punktu w przejsciu przypozadkowac proces odpowiedzialny za punkt,
     //TODO a dzieki temu nastepnie wyznaczayc czy dane przejscie jest w gole mozliwe na podstawie komunikacji miedzy procesami
     //TODO czyli trzeba miec (punkt, proces) -> (punkt, proces) -> (punkt, proces), itd.
+
+    auto stepper = new GraphStepper();
+
+    stepper->startSearch(0, 8, *taskContainer);
+    auto steps = stepper->getGlobalPaths();
+
+    for(auto& s : steps) {
+        for(auto& n: s) {
+            cout<<n->getId()<<" -> ";
+        }
+        cout<<endl;
+    }
 }
