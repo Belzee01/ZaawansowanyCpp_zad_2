@@ -2,8 +2,8 @@
 // Created by Kajetan Lipensky on 2019-04-05.
 //
 
-#ifndef TEST_1_COMMUNICATION_H
-#define TEST_1_COMMUNICATION_H
+#ifndef ZAD2_COMMUNICATION_H
+#define ZAD2_COMMUNICATION_H
 
 #include <cstdlib>
 #include <time.h>

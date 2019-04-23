@@ -1,16 +1,11 @@
-//
-// Created by Belzee on 19.04.2019.
-//
+#ifndef ZAD2_GRAPHSTEPPER_H
+#define ZAD2_GRAPHSTEPPER_H
 
 #include <iostream>
 #include <list>
 #include <map>
-#include "Task.h"
-#include <vector>
 #include "TasksContainer.h"
-
-#ifndef ZAD2_GRAPHSTEPPER_H
-#define ZAD2_GRAPHSTEPPER_H
+#include <vector>
 
 using namespace std;
 
@@ -26,6 +21,8 @@ public:
     void startSearch(int startId, int endId, TasksContainer container);
 
     const vector<vector<Task *>> &getGlobalPaths() const;
+
+    vector<Task *> getFirstPath();
 };
 
 

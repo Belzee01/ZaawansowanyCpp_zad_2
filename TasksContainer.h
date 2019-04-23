@@ -1,13 +1,5 @@
-#include <utility>
-
-#include <utility>
-
-//
-// Created by Kajetan Lipensky on 2019-04-03.
-//
-
-#ifndef TEST_1_TASKSCONTAINER_H
-#define TEST_1_TASKSCONTAINER_H
+#ifndef ZAD2_TASKSCONTAINER_H
+#define ZAD2_TASKSCONTAINER_H
 
 #include "Task.h"
 #include "Communication.h"
@@ -22,7 +14,7 @@ private:
     int numberOfTasks;
     int procSize;
     std::map<Task *, std::list<Task *>> tasks;
-    std::list<Process> processes;
+    std::vector<Process> processes;
     Task *taskArr;
     std::vector<Communication> comm;
 
@@ -48,7 +40,7 @@ public:
         return numberOfTasks;
     }
 
-    const list<Process> &getProcesses() const {
+    const vector<Process> &getProcesses() const {
         return processes;
     }
 
@@ -56,11 +48,11 @@ public:
         return procSize;
     }
 
-    void setProcesses(const list<Process> &processes) {
+    void setProcesses(const vector<Process> &processes) {
         TasksContainer::processes = processes;
     }
 
-    void setProcesses(const list<Process> &processes, const int procSize) {
+    void setProcesses(const vector<Process> &processes, const int procSize) {
         TasksContainer::processes = processes;
         TasksContainer::procSize = procSize;
     }
@@ -74,6 +66,7 @@ public:
     }
 
 public:
+
     void printData() {
         auto tasksAdjList = this->getTasksMap();
 

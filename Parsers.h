@@ -58,8 +58,8 @@ class ProcParser {
 public:
     ProcParser() = default;
 
-    std::list<Process> parse(ifstream &file, int proc) {
-        std::list<Process> procList;
+    std::vector<Process> parse(ifstream &file, int proc) {
+        std::vector<Process> procList;
 
         for (int i = 0; i < proc; ++i) {
             string line;

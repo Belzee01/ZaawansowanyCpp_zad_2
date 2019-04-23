@@ -2,8 +2,8 @@
 // Created by Kajetan Lipensky on 2019-04-03.
 //
 
-#ifndef TEST_1_TASK_H
-#define TEST_1_TASK_H
+#ifndef ZAD2_TASK_H
+#define ZAD2_TASK_H
 
 #include<iostream>
 #include<cstdlib>
@@ -16,9 +16,10 @@ class Task {
 private:
     int weight{};
 
-    std::list<Process> proc;
     int *costs{};
     int *times{};
+
+    Process preferredProc;
 
 private:
 
@@ -57,8 +58,8 @@ public:
         return costs;
     }
 
-    const std::list<Process> &getProc() const {
-        return proc;
+    void setPreferredProcess(Process process) {
+        this->preferredProc = process;
     }
 
     bool operator()(const Task &lhs, const Task &rhs) const {

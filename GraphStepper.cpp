@@ -21,7 +21,7 @@ bool GraphStepper::getPaths(vector<Task *> &paths, int startId, int endId, Task 
     try {
         childs = tasksMap.at(currentTask);
         paths.push_back(currentTask);
-    } catch (out_of_range e){
+    } catch (out_of_range e) {
         paths.push_back(currentTask);
         return false;
     }
@@ -45,4 +45,8 @@ void GraphStepper::startSearch(int startId, int endId, TasksContainer container)
 
 const vector<vector<Task *>> &GraphStepper::getGlobalPaths() const {
     return globalPaths;
+}
+
+vector<Task *> GraphStepper::getFirstPath() {
+    return globalPaths.at(0);
 }

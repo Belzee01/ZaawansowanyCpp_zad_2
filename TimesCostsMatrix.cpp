@@ -57,3 +57,7 @@ void TimesCostsMatrix::evaluateIndexArray() {
     }
 }
 
+int **TimesCostsMatrix::getIndexArr() const {
+    return indexArr;
+}
+

@@ -12,6 +12,7 @@
 #include "Parsers.h"
 #include "TimesCostsMatrix.h"
 #include "GraphStepper.h"
+#include "DecisionMaker.h"
 
 using namespace std;
 
@@ -43,10 +44,15 @@ int main(int args, char **argv) {
     stepper->startSearch(0, 8, *taskContainer);
     auto steps = stepper->getGlobalPaths();
 
-    for(auto& s : steps) {
-        for(auto& n: s) {
-            cout<<n->getId()<<" -> ";
+
+
+    auto decisionMaker = new DecisionMaker();
+    decisionMaker->setPreferredProcesses(*stepper, tcMatrix->getIndexArr(), *taskContainer);
+
+    for (auto &s : steps) {
+        for (auto &n: s) {
+            cout << n->getId() << " -> ";
         }
-        cout<<endl;
+        cout << endl;
     }
 }

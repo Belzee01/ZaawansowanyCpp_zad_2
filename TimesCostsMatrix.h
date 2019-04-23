@@ -41,6 +41,9 @@ public:
 
     void evaluateMatrix(Task *taskArr);
 
+    /***
+     * Requires evaluateMatrix(Task *taskArr) to be run firstly
+     */
     void evaluateIndexArray();
 
     void printOutMatrix() {
@@ -60,6 +63,8 @@ public:
             cout << endl;
         }
     }
+
+    int **getIndexArr() const;
 };
 
 

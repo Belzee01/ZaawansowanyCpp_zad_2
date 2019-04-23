@@ -2,8 +2,8 @@
 // Created by Kajetan Lipensky on 2019-04-03.
 //
 
-#ifndef TEST_1_PROCESS_H
-#define TEST_1_PROCESS_H
+#ifndef ZAD2_PROCESS_H
+#define ZAD2_PROCESS_H
 
 #include<iostream>
 #include<cstdlib>
