@@ -16,7 +16,7 @@ private:
     struct TaskIdProcessId {
         int taskId;
         int processId;
-        int comm;
+        int comm{};
 
         TaskIdProcessId(int taskId, int processId) : taskId(taskId), processId(processId) {}
 
