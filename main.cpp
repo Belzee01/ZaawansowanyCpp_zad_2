@@ -47,8 +47,8 @@ int main(int args, char **argv) {
     auto paths = DecisionMaker::establishPreferredProcesses(*stepper, tcMatrix->getIndexArr(), *taskContainer);
     for (auto &path : paths) {
         for (auto &p : path) {
-            cout << p.getTaskId() << " x " << p.getProcessId() << " -> ";
+            cout << p.getTaskId() << " x " << p.getProcessId() << " x " << p.getComm() << " -> ";
         }
-        cout<<endl;
+        cout << endl;
     }
 }

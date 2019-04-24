@@ -166,11 +166,8 @@ public:
                 ss >> temp;
                 switch (count) {
                     case 0: {
-                        stringstream(temp) >> found;
-                        if (found != -1) {
-                            id = found;
-                            ss.clear();
-                        }
+                        id = i;
+                        ss.clear();
                     }
                         break;
                     case 1: {
@@ -199,7 +196,7 @@ public:
                 temp = "";
                 count++;
             }
-            commList.push_back(Communication(id, cost, capacity, connections, proc));
+            commList.emplace_back(id, cost, capacity, connections, proc);
 
         }
         return commList;

@@ -24,8 +24,9 @@ public:
             numberOfTasks), tasks(std::move(tasks)), taskArr(taskArr) {
     }
 
-    TasksContainer(int numberOfTasks, int procSize, std::map<Task *, std::list<Task *>> tasks, Task *taskArr) : numberOfTasks(
-            numberOfTasks),procSize(procSize), tasks(std::move(tasks)), taskArr(taskArr) {
+    TasksContainer(int numberOfTasks, int procSize, std::map<Task *, std::list<Task *>> tasks, Task *taskArr)
+            : numberOfTasks(
+            numberOfTasks), procSize(procSize), tasks(std::move(tasks)), taskArr(taskArr) {
     }
 
     map<Task *, list<Task *>> getTasksMap() {
@@ -70,7 +71,7 @@ public:
     void printData() {
         auto tasksAdjList = this->getTasksMap();
 
-        for (auto & it : tasksAdjList) {
+        for (auto &it : tasksAdjList) {
             cout << it.first->getId() << ": ";
             for (auto &l: it.second) {
                 cout << l->getId() << ", ";
@@ -110,6 +111,13 @@ public:
     }
 
     //TODO add method for checking communication access between two processes
+    int getPossibleConnection(int startProcId, int endProcId) {
+        for (auto &c: comm) {
+            if (c.getProcConnections().at(startProcId) == 1 and c.getProcConnections().at(endProcId) == 1)
+                return c.getId();
+        }
+        return -1;
+    }
 };
 
 
