@@ -108,6 +108,8 @@ public:
             cout << endl;
         }
     }
+
+    //TODO add method for checking communication access between two processes
 };
 
 

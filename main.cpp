@@ -44,15 +44,11 @@ int main(int args, char **argv) {
     stepper->startSearch(0, 8, *taskContainer);
     auto steps = stepper->getGlobalPaths();
 
-
-
-    auto decisionMaker = new DecisionMaker();
-    decisionMaker->setPreferredProcesses(*stepper, tcMatrix->getIndexArr(), *taskContainer);
-
-    for (auto &s : steps) {
-        for (auto &n: s) {
-            cout << n->getId() << " -> ";
+    auto paths = DecisionMaker::establishPreferredProcesses(*stepper, tcMatrix->getIndexArr(), *taskContainer);
+    for (auto &path : paths) {
+        for (auto &p : path) {
+            cout << p.getTaskId() << " x " << p.getProcessId() << " -> ";
         }
-        cout << endl;
+        cout<<endl;
     }
 }

@@ -13,10 +13,11 @@ class GraphStepper {
 private:
     vector<vector<Task *>> globalPaths;
     int counter;
-public:
-    GraphStepper();
 
     bool getPaths(vector<Task *> &paths, int startId, int endId, Task *taskArr, map<Task *, list<Task *>> tasksMap);
+
+public:
+    GraphStepper();
 
     void startSearch(int startId, int endId, TasksContainer container);
 

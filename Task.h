@@ -29,9 +29,11 @@ public:
 public:
     Task() = default;
 
+    Task(const Task& other) : weight(other.weight), costs(other.costs), times(other.times), id(other.id) {}
+
     virtual ~Task() {
-        delete[] costs;
-        delete[] times;
+//        delete[] costs;
+//        delete[] times;
     }
 
     void setId(int id) {
@@ -58,8 +60,12 @@ public:
         return costs;
     }
 
-    void setPreferredProcess(Process process) {
-        this->preferredProc = process;
+    void setPreferredProcess(Process &process) {
+        Task::preferredProc = process;
+    }
+
+    const Process &getPreferredProc() const {
+        return preferredProc;
     }
 
     bool operator()(const Task &lhs, const Task &rhs) const {

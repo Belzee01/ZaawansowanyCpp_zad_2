@@ -16,6 +16,7 @@ private:
     int typeOfProcess; // 0 dedicated, 1 universal
 
 private:
+    int effectiveCost;
 
 public:
 
@@ -25,8 +26,15 @@ public:
         this->typeOfProcess = -1;
     }
 
-    Process(int initialCost, int startDelay, int typeOfProcess) : initialCost(initialCost), typeOfProcess(typeOfProcess),
-                                                                startDelay(startDelay) {}
+    Process(int initialCost, int startDelay, int typeOfProcess) : initialCost(initialCost),
+                                                                  typeOfProcess(typeOfProcess),
+                                                                  startDelay(startDelay) {
+
+        if (typeOfProcess == 0)
+            effectiveCost = 0;
+        else
+            effectiveCost = initialCost;
+    }
 
     int getInitialCost() const {
         return initialCost;
@@ -38,6 +46,10 @@ public:
 
     int getStartDelay() const {
         return startDelay;
+    }
+
+    int getEffectiveCost() const {
+        return effectiveCost;
     }
 };
 
