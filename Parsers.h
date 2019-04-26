@@ -23,8 +23,9 @@ private:
 public:
     TaskParser() = default;
 
-    TasksContainer *parse(ifstream &file, int tasks, Task *taskArr) {
-        std::map<Task *, std::list<Task *>> tasksMap;
+    template <class Com, class C, class Tm>
+    TasksContainer<Com, C, Tm> *parse(ifstream &file, int tasks, Task<C, Tm> *taskArr) {
+        std::map<Task<C, Tm> *, std::list<Task<C, Tm> *>> tasksMap;
 
         for (int i = 0; i < tasks; ++i) {
             string line;
@@ -49,7 +50,7 @@ public:
                 temp = "";
             }
         }
-        return new TasksContainer(tasks, tasksMap, taskArr);
+        return new TasksContainer<Com, C, Tm>(tasks, tasksMap, taskArr);
     }
 };
 
@@ -58,8 +59,8 @@ class ProcParser {
 public:
     ProcParser() = default;
 
-    std::vector<Process> parse(ifstream &file, int proc) {
-        std::vector<Process> procList;
+    std::vector<Process<>> parse(ifstream &file, int proc) {
+        std::vector<Process<>> procList;
 
         for (int i = 0; i < proc; ++i) {
             string line;
@@ -71,7 +72,7 @@ public:
 
             int cost = -1, bandwith = -1, type = -1;
             ss >> cost >> bandwith >> type;
-            procList.push_back(*new Process(cost, bandwith, type));
+            procList.push_back(*new Process<>(cost, bandwith, type));
 
         }
         return procList;
@@ -82,17 +83,18 @@ class TimesParser {
 public:
     TimesParser() = default;
 
-    void parse(ifstream &file, int tasks, int proc, Task *taskArr) {
+    template <class C, class Tm>
+    void parse(ifstream &file, int tasks, int proc, Task<C, Tm> *taskArr) {
 
         for (int i = 0; i < tasks; ++i) {
             string line;
             getline(file, line);
 
-            int found = -1;
+            Tm found = -1;
             stringstream ss;
             ss << line;
 
-            int *times = new int[proc];
+            Tm *times = new Tm[proc];
 
             string temp;
             int id = 0;
@@ -112,17 +114,18 @@ class CostsParser {
 public:
     CostsParser() = default;
 
-    void parse(ifstream &file, int tasks, int proc, Task *taskArr) {
+    template <class C, class Tm>
+    void parse(ifstream &file, int tasks, int proc, Task<C, Tm> *taskArr) {
 
         for (int i = 0; i < tasks; ++i) {
             string line;
             getline(file, line);
 
-            int found = -1;
+            C found = -1;
             stringstream ss;
             ss << line;
 
-            int *costs = new int[proc];
+            C *costs = new C[proc];
 
             string temp;
             int id = 0;
@@ -143,8 +146,9 @@ class CommParser {
 public:
     CommParser() = default;
 
-    std::vector<Communication> parse(ifstream &file, int comm, int proc) {
-        std::vector<Communication> commList;
+    template <class Com>
+    std::vector<Communication<Com>> parse(ifstream &file, int comm, int proc) {
+        std::vector<Communication<Com>> commList;
 
         for (int i = 0; i < comm; ++i) {
             string line;
@@ -203,6 +207,7 @@ public:
     }
 };
 
+template <class C, class Tm, class Com>
 class Parsers {
 private:
     int extractInt(const string &str) {
@@ -220,7 +225,7 @@ private:
     }
 
 private:
-    Task *taskArr = nullptr;
+    Task<C, Tm> *taskArr = nullptr;
 
 public:
     Parsers() = default;
@@ -229,11 +234,11 @@ public:
         delete[] taskArr;
     }
 
-    TasksContainer *parse(const char *filename) {
+    TasksContainer<Com, C, Tm> *parse(const char *filename) {
         int tasks;
         int proc;
         int comm;
-        TasksContainer *taskContainer = nullptr;
+        TasksContainer<Com, C, Tm> *taskContainer = nullptr;
 
         auto taskParser = new TaskParser();
         auto procParser = new ProcParser();
@@ -247,11 +252,11 @@ public:
             while (getline(myfile, line)) {
                 if (line.rfind("@tasks") != std::string::npos) {
                     tasks = extractInt(line);
-                    taskArr = new Task[tasks];
+                    taskArr = new Task<C, Tm>[tasks];
                     for (int k = 0; k < tasks; ++k) {
                         taskArr[k].setId(k);
                     }
-                    taskContainer = taskParser->parse(myfile, tasks, taskArr);
+                    taskContainer = taskParser->parse<Com>(myfile, tasks, taskArr);
                 }
                 if (line.rfind("@proc") != std::string::npos) {
                     proc = extractInt(line);
@@ -265,7 +270,7 @@ public:
                 }
                 if (line.rfind("@comm") != std::string::npos) {
                     comm = extractInt(line);
-                    taskContainer->setComm(commParser->parse(myfile, comm, proc));
+                    taskContainer->setComm(commParser->parse<Com>(myfile, comm, proc));
                 }
             }
             myfile.close();
