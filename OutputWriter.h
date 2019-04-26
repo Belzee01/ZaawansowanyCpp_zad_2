@@ -17,7 +17,7 @@ class OutputWriter {
 public:
     OutputWriter();
 
-    void writeToFile(vector<vector<TaskIdProcessId>> paths);
+    void writeToFile(vector<Path> data);
 };
 
 

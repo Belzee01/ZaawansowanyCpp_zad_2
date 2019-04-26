@@ -13,6 +13,7 @@
 #include "TimesCostsMatrix.h"
 #include "GraphStepper.h"
 #include "DecisionMaker.h"
+#include "OutputWriter.h"
 
 using namespace std;
 
@@ -39,4 +40,11 @@ int main(int args, char **argv) {
         }
         cout << endl;
     }
+
+    auto finalCostTime = DecisionMaker::calculateFinalCostAndTime(paths, *taskContainer);
+
+    auto outputData = DecisionMaker::prepareForOutput(paths, *taskContainer);
+
+    auto outputWriter = OutputWriter();
+    outputWriter.writeToFile(outputData);
 }

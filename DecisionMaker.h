@@ -8,6 +8,7 @@
 #include "GraphStepper.h"
 #include "TimesCostsMatrix.h"
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -37,52 +38,58 @@ struct TaskIdProcessId {
     }
 };
 
+
+struct FinalCostAndTime {
+    int cost;
+    int time;
+
+    vector<int> communicationAlreadyPaid;
+
+    void addCost(TaskIdProcessId obj, TasksContainer container);
+
+    int getCost() const {
+        return cost;
+    }
+
+    int getTime() const {
+        return time;
+    }
+};
+
+struct Path {
+    vector<TaskIdProcessId> path;
+    FinalCostAndTime costAndTime;
+
+    Path(const vector<TaskIdProcessId> &path) : path(path) {}
+
+    Path(const vector<TaskIdProcessId> &path, const FinalCostAndTime &costAndTime) : path(path),
+                                                                                     costAndTime(costAndTime) {}
+
+    const vector<TaskIdProcessId> &getPath() const {
+        return path;
+    }
+
+    const FinalCostAndTime &getCostAndTime() const {
+        return costAndTime;
+    }
+
+    void setCostAndTime(const FinalCostAndTime &costAndTime) {
+        Path::costAndTime = costAndTime;
+    }
+};
+
 class DecisionMaker {
 private:
-
 
 public:
     DecisionMaker();
 
-    static vector<vector<TaskIdProcessId>>
-    establishPreferredProcesses(const GraphStepper &stepper, int **indexArr, TasksContainer container) {
-        vector<vector<Task *>> tasksPaths = stepper.getGlobalPaths();
-        const vector<Process> &processes = container.getProcesses();
+    static vector<Path>
+    establishPreferredProcesses(const GraphStepper &stepper, int **indexArr, TasksContainer container);
 
-        vector<vector<TaskIdProcessId>> establishedTaskPaths;
+    static vector<Path> calculateFinalCostAndTime(vector<Path> paths, TasksContainer container);
 
-        for (auto &tasksPath : tasksPaths) {
-            vector<TaskIdProcessId> currentPath;
-            int currentIndex = 0;
-            for (auto &t: tasksPath) {
-                int communicationId = -1;
-                int bestValueIndex = -1;
-                if (!currentPath.empty()) {
-                    int k = 0;
-                    while (communicationId == -1 and k < processes.size()) {
-                        bestValueIndex = indexArr[t->getId()][k];
-                        communicationId = container.getBestPossibleConnection(bestValueIndex, currentPath.at(
-                                currentIndex - 1).getProcessId());
-                        k++;
-                    }
-                    if (communicationId == -1) {
-                        currentPath.clear();
-                        break;
-                    }
-                } else {
-                    bestValueIndex = indexArr[t->getId()][0];
-                }
-                currentPath.emplace_back(t->getId(), bestValueIndex, communicationId);
-                currentIndex++;
-            }
-            if (!currentPath.empty()) {
-                currentPath.at(0).setComm(currentPath.at(1).getComm());
-                establishedTaskPaths.push_back(currentPath);
-            }
-        }
-        return establishedTaskPaths;
-    }
-
+    static vector<vector<vector<int>>> prepareForOutput(vector<Path> paths, TasksContainer container);
 };
 
 
