@@ -25,9 +25,8 @@ int main(int args, char **argv) {
 
     cout << endl;
 
-    auto tcMatrix = new TimesCostsMatrix<float>(taskContainer->getTasksSize(), taskContainer->getProcSize());
-    tcMatrix->evaluateMatrix(taskContainer->getTasks());
-    tcMatrix->evaluateIndexArray();
+    auto tcMatrix = new TimesCostsMatrix(*taskContainer);
+    tcMatrix->evaluateIndexArray(taskContainer->getTasks());
     tcMatrix->printOutIndexMatrix();
 
     auto stepper = new GraphStepper<int, float, float>();
