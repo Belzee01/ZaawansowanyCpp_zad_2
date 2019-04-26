@@ -38,60 +38,78 @@ struct TaskIdProcessId {
     }
 };
 
-
+template<class C, class Tm>
 struct FinalCostAndTime {
-    int cost;
-    int time;
+    C cost;
+    Tm time;
 
     vector<int> communicationAlreadyPaid;
 
-    void addCost(TaskIdProcessId obj, TasksContainer container);
+    template <class Com>
+    void addCost(TaskIdProcessId obj, TasksContainer<Com, C, Tm> container);
 
-    int getCost() const {
+    C getCost() const {
         return cost;
     }
 
-    int getTime() const {
+    Tm getTime() const {
         return time;
     }
 };
 
+template<class C, class Tm>
+template<class Com>
+void FinalCostAndTime<C, Tm>::addCost(TaskIdProcessId obj, TasksContainer<Com, C, Tm> container) {
+    if (std::find(communicationAlreadyPaid.begin(), communicationAlreadyPaid.end(), obj.getComm()) !=
+        communicationAlreadyPaid.end()) {
+
+    } else {
+        communicationAlreadyPaid.push_back(obj.getComm());
+        cost += container.getComm().at(obj.getComm()).getCost();
+    }
+    cost += container.getProcesses().at(obj.getProcessId()).getEffectiveCost();
+    cost += container.getTasks()[obj.getTaskId()].getCosts()[obj.getProcessId()];
+    time += container.getTasks()[obj.getTaskId()].getTimes()[obj.getProcessId()];
+}
+
+template<class C, class Tm>
 struct Path {
     vector<TaskIdProcessId> path;
-    FinalCostAndTime costAndTime;
+    FinalCostAndTime<C, Tm> costAndTime;
 
     Path(const vector<TaskIdProcessId> &path) : path(path) {}
 
-    Path(const vector<TaskIdProcessId> &path, const FinalCostAndTime &costAndTime) : path(path),
+    Path(const vector<TaskIdProcessId> &path, const FinalCostAndTime<C, Tm> &costAndTime) : path(path),
                                                                                      costAndTime(costAndTime) {}
 
     const vector<TaskIdProcessId> &getPath() const {
         return path;
     }
 
-    const FinalCostAndTime &getCostAndTime() const {
+    const FinalCostAndTime<C, Tm> &getCostAndTime() const {
         return costAndTime;
     }
 
-    void setCostAndTime(const FinalCostAndTime &costAndTime) {
+    void setCostAndTime(const FinalCostAndTime<C, Tm> &costAndTime) {
         Path::costAndTime = costAndTime;
     }
 };
 
+template<class C, class Tm>
 struct OutputData {
     vector<vector<int>> tasksSortedByProcesses;
-    FinalCostAndTime costAndTime;
+    FinalCostAndTime<C, Tm> costAndTime;
     OutputData(const vector<vector<int>> &tasksSortedByProcesses) : tasksSortedByProcesses(
             tasksSortedByProcesses) {}
 
-    OutputData(const vector<vector<int>> &tasksSortedByProcesses, const FinalCostAndTime &costAndTime)
+    OutputData(const vector<vector<int>> &tasksSortedByProcesses, const FinalCostAndTime<C, Tm> &costAndTime)
             : tasksSortedByProcesses(tasksSortedByProcesses), costAndTime(costAndTime) {}
 
     const vector<vector<int>> &getTasksSortedByProcesses() const {
         return tasksSortedByProcesses;
     }
 
-    const FinalCostAndTime &getCostAndTime() const {
+    const FinalCostAndTime<C, Tm> &getCostAndTime() const {
         return costAndTime;
     }
 };
@@ -102,13 +120,95 @@ private:
 public:
     DecisionMaker();
 
-    static vector<Path>
-    establishPreferredProcesses(const GraphStepper &stepper, int **indexArr, TasksContainer container);
+    template <class Com, class C, class Tm>
+    static vector<Path<C, Tm>>
+    establishPreferredProcesses(vector<vector<Task<C, Tm> *>> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container);
 
-    static vector<Path> calculateFinalCostAndTime(vector<Path> paths, TasksContainer container);
+    template <class Com, class C, class Tm>
+    static vector<Path<C, Tm>> calculateFinalCostAndTime(vector<Path<C, Tm>> paths, TasksContainer<Com, C, Tm> container);
 
-    static vector<OutputData> prepareForOutput(vector<Path> paths, TasksContainer container);
+    template <class Com, class C, class Tm>
+    static vector<OutputData<C, Tm>> prepareForOutput(vector<Path<C, Tm>> paths, TasksContainer<Com, C, Tm> container);
 };
 
+
+DecisionMaker::DecisionMaker() = default;
+
+template <class Com, class C, class Tm>
+vector<Path<C, Tm>>
+DecisionMaker::calculateFinalCostAndTime(vector<Path<C, Tm>> paths, TasksContainer<Com, C, Tm> container) {
+
+    for (auto &path : paths) {
+        auto finalCostTime = FinalCostAndTime<C, Tm>();
+        for (auto &obj: path.getPath()) {
+            finalCostTime.addCost(obj, container);
+        }
+        path.setCostAndTime(finalCostTime);
+    }
+
+    return paths;
+}
+
+template <class Com, class C, class Tm>
+vector<OutputData<C, Tm>>
+DecisionMaker::prepareForOutput(vector<Path<C, Tm>> paths, TasksContainer<Com, C, Tm> container) {
+    vector<OutputData<C, Tm>> all;
+
+    for (auto &path:paths) {
+        vector<vector<int>> tasksSortedByProcesses(container.getProcesses().size());
+        for (auto &obj: path.getPath()) {
+            tasksSortedByProcesses[obj.getProcessId()].push_back(obj.getTaskId());
+        }
+        all.emplace_back(tasksSortedByProcesses, path.getCostAndTime());
+    }
+
+    return all;
+}
+
+template<class Com, class C, class Tm>
+vector<Path<C, Tm>>
+DecisionMaker::establishPreferredProcesses(vector<vector<Task<C, Tm> *>> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container) {
+    vector<vector<Task<C, Tm> *>> tasksPaths = stepper;
+    const vector<Process<>> &processes = container.getProcesses();
+
+    vector<vector<TaskIdProcessId>> establishedTaskPaths;
+
+    for (auto &tasksPath : tasksPaths) {
+        vector<TaskIdProcessId> currentPath;
+        int currentIndex = 0;
+        for (auto &t: tasksPath) {
+            int communicationId = -1;
+            int bestValueIndex = -1;
+            if (!currentPath.empty()) {
+                int k = 0;
+                while (communicationId == -1 and k < processes.size()) {
+                    bestValueIndex = indexArr[t->getId()][k];
+                    communicationId = container.getBestPossibleConnection(bestValueIndex, currentPath.at(
+                            currentIndex - 1).getProcessId());
+                    k++;
+                }
+                if (communicationId == -1) {
+                    currentPath.clear();
+                    break;
+                }
+            } else {
+                bestValueIndex = indexArr[t->getId()][0];
+            }
+            currentPath.emplace_back(t->getId(), bestValueIndex, communicationId);
+            currentIndex++;
+        }
+        if (!currentPath.empty()) {
+            currentPath.at(0).setComm(currentPath.at(1).getComm());
+            establishedTaskPaths.push_back(currentPath);
+        }
+    }
+
+    vector<Path<C, Tm>> paths;
+    for(auto &path: establishedTaskPaths) {
+        paths.emplace_back(path);
+    }
+
+    return paths;
+}
 
 #endif //ZAD2_DECISIONMAKER_H

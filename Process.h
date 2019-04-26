@@ -9,10 +9,11 @@
 #include<cstdlib>
 #include<ctime>
 
+template <class cost=int, class delay=int>
 class Process {
 private:
-    int initialCost{};
-    int startDelay{};
+    cost initialCost{};
+    delay startDelay{};
     int typeOfProcess; // 0 dedicated, 1 universal
 
 private:
@@ -26,7 +27,7 @@ public:
         this->typeOfProcess = -1;
     }
 
-    Process(int initialCost, int startDelay, int typeOfProcess) : initialCost(initialCost),
+    Process(cost initialCost, delay startDelay, int typeOfProcess) : initialCost(initialCost),
                                                                   typeOfProcess(typeOfProcess),
                                                                   startDelay(startDelay) {
 
@@ -36,7 +37,7 @@ public:
             effectiveCost = initialCost;
     }
 
-    int getInitialCost() const {
+    cost getInitialCost() const {
         return initialCost;
     }
 
@@ -44,11 +45,11 @@ public:
         return typeOfProcess;
     }
 
-    int getStartDelay() const {
+    delay getStartDelay() const {
         return startDelay;
     }
 
-    int getEffectiveCost() const {
+    cost getEffectiveCost() const {
         return effectiveCost;
     }
 };

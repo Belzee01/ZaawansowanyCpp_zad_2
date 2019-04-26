@@ -9,31 +9,32 @@
 
 using namespace std;
 
+template <class Com, class C, class Tm>
 class TasksContainer {
 private:
     int numberOfTasks;
     int procSize;
-    std::map<Task *, std::list<Task *>> tasks;
-    std::vector<Process> processes;
-    Task *taskArr;
-    std::vector<Communication> comm;
+    std::map<Task<C, Tm> *, std::list<Task<C, Tm> *>> tasks;
+    std::vector<Process<>> processes;
+    Task<C, Tm> *taskArr;
+    std::vector<Communication<Com>> comm;
 
 public:
 
-    TasksContainer(int numberOfTasks, std::map<Task *, std::list<Task *>> tasks, Task *taskArr) : numberOfTasks(
+    TasksContainer(int numberOfTasks, std::map<Task<C, Tm> *, std::list<Task<C, Tm> *>> tasks, Task<C, Tm> *taskArr) : numberOfTasks(
             numberOfTasks), tasks(std::move(tasks)), taskArr(taskArr) {
     }
 
-    TasksContainer(int numberOfTasks, int procSize, std::map<Task *, std::list<Task *>> tasks, Task *taskArr)
+    TasksContainer(int numberOfTasks, int procSize, std::map<Task<C, Tm> *, std::list<Task<C, Tm> *>> tasks, Task<C, Tm> *taskArr)
             : numberOfTasks(
             numberOfTasks), procSize(procSize), tasks(std::move(tasks)), taskArr(taskArr) {
     }
 
-    map<Task *, list<Task *>> getTasksMap() {
+    map<Task<C, Tm> *, list<Task<C, Tm> *>> getTasksMap() {
         return tasks;
     }
 
-    Task *getTasks() {
+    Task<C, Tm> *getTasks() {
         return taskArr;
     }
 
@@ -41,7 +42,7 @@ public:
         return numberOfTasks;
     }
 
-    const vector<Process> &getProcesses() const {
+    const vector<Process<>> &getProcesses() const {
         return processes;
     }
 
@@ -49,20 +50,20 @@ public:
         return procSize;
     }
 
-    void setProcesses(const vector<Process> &processes) {
+    void setProcesses(const vector<Process<>> &processes) {
         TasksContainer::processes = processes;
     }
 
-    void setProcesses(const vector<Process> &processes, const int procSize) {
+    void setProcesses(const vector<Process<>> &processes, const int procSize) {
         TasksContainer::processes = processes;
         TasksContainer::procSize = procSize;
     }
 
-    const vector<Communication> &getComm() const {
+    const vector<Communication<Com>> &getComm() const {
         return comm;
     }
 
-    void setComm(const vector<Communication> &comm) {
+    void setComm(const vector<Communication<Com>> &comm) {
         TasksContainer::comm = comm;
     }
 

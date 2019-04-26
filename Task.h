@@ -11,15 +11,13 @@
 #include "Process.h"
 #include <list>
 
-
+template<class C, class T, class W=int>
 class Task {
 private:
-    int weight{};
+    W weight{};
 
-    int *costs{};
-    int *times{};
-
-    Process preferredProc;
+    C *costs{};
+    T *times{};
 
 private:
 
@@ -29,22 +27,20 @@ public:
 public:
     Task() = default;
 
-    Task(const Task& other) : weight(other.weight), costs(other.costs), times(other.times), id(other.id) {}
+    Task(const Task &other) : weight(other.weight), costs(other.costs), times(other.times), id(other.id) {}
 
     virtual ~Task() {
-//        delete[] costs;
-//        delete[] times;
     }
 
     void setId(int id) {
         Task::id = id;
     }
 
-    void setTimes(int *times) {
+    void setTimes(T *times) {
         Task::times = times;
     }
 
-    void setCosts(int *costs) {
+    void setCosts(C *costs) {
         Task::costs = costs;
     }
 
@@ -52,20 +48,12 @@ public:
         return id;
     }
 
-    int *getTimes() const {
+    T *getTimes() const {
         return times;
     }
 
-    int *getCosts() const {
+    C *getCosts() const {
         return costs;
-    }
-
-    void setPreferredProcess(Process &process) {
-        Task::preferredProc = process;
-    }
-
-    const Process &getPreferredProc() const {
-        return preferredProc;
     }
 
     bool operator()(const Task &lhs, const Task &rhs) const {
