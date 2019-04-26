@@ -78,6 +78,24 @@ struct Path {
     }
 };
 
+struct OutputData {
+    vector<vector<int>> tasksSortedByProcesses;
+    FinalCostAndTime costAndTime;
+    OutputData(const vector<vector<int>> &tasksSortedByProcesses) : tasksSortedByProcesses(
+            tasksSortedByProcesses) {}
+
+    OutputData(const vector<vector<int>> &tasksSortedByProcesses, const FinalCostAndTime &costAndTime)
+            : tasksSortedByProcesses(tasksSortedByProcesses), costAndTime(costAndTime) {}
+
+    const vector<vector<int>> &getTasksSortedByProcesses() const {
+        return tasksSortedByProcesses;
+    }
+
+    const FinalCostAndTime &getCostAndTime() const {
+        return costAndTime;
+    }
+};
+
 class DecisionMaker {
 private:
 
@@ -89,7 +107,7 @@ public:
 
     static vector<Path> calculateFinalCostAndTime(vector<Path> paths, TasksContainer container);
 
-    static vector<vector<vector<int>>> prepareForOutput(vector<Path> paths, TasksContainer container);
+    static vector<OutputData> prepareForOutput(vector<Path> paths, TasksContainer container);
 };
 
 

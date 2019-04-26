@@ -65,16 +65,16 @@ DecisionMaker::calculateFinalCostAndTime(vector<Path> paths, TasksContainer cont
     return paths;
 }
 
-vector<vector<vector<int>>>
+vector<OutputData>
 DecisionMaker::prepareForOutput(vector<Path> paths, TasksContainer container) {
-    vector<vector<vector<int>>> all;
+    vector<OutputData> all;
 
     for (auto &path:paths) {
         vector<vector<int>> tasksSortedByProcesses(container.getProcesses().size());
         for (auto &obj: path.getPath()) {
             tasksSortedByProcesses[obj.getProcessId()].push_back(obj.getTaskId());
         }
-        all.push_back(tasksSortedByProcesses);
+        all.emplace_back(tasksSortedByProcesses, path.getCostAndTime());
     }
 
     return all;

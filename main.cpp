@@ -35,14 +35,13 @@ int main(int args, char **argv) {
 
     auto paths = DecisionMaker::establishPreferredProcesses(*stepper, tcMatrix->getIndexArr(), *taskContainer);
     for (auto &path : paths) {
-        for (auto &p : path) {
+        for (auto &p : path.getPath()) {
             cout << p.getTaskId() << " x " << p.getProcessId() << " x " << p.getComm() << " -> ";
         }
         cout << endl;
     }
 
-    auto finalCostTime = DecisionMaker::calculateFinalCostAndTime(paths, *taskContainer);
-
+    paths = DecisionMaker::calculateFinalCostAndTime(paths, *taskContainer);
     auto outputData = DecisionMaker::prepareForOutput(paths, *taskContainer);
 
     auto outputWriter = OutputWriter();

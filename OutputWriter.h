@@ -17,7 +17,7 @@ class OutputWriter {
 public:
     OutputWriter();
 
-    void writeToFile(vector<Path> data);
+    void writeToFile(vector<OutputData> data);
 };
 
 
