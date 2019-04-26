@@ -110,13 +110,18 @@ public:
         }
     }
 
-    //TODO add method for checking communication access between two processes
-    int getPossibleConnection(int startProcId, int endProcId) {
+    int getBestPossibleConnection(int startProcId, int endProcId) {
+        int bestConnection = -1;
+        int bestConnectionCost = INT_MAX;
         for (auto &c: comm) {
-            if (c.getProcConnections().at(startProcId) == 1 and c.getProcConnections().at(endProcId) == 1)
-                return c.getId();
+            if (c.getProcConnections().at(startProcId) == 1 and c.getProcConnections().at(endProcId) == 1) {
+                if (c.getCost() < bestConnectionCost) {
+                    bestConnection = c.getId();
+                    bestConnectionCost = c.getCost();
+                }
+            }
         }
-        return -1;
+        return bestConnection;
     }
 };
 
