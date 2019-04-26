@@ -181,7 +181,7 @@ DecisionMaker::establishPreferredProcesses(vector<vector<Task<C, Tm> *>> &steppe
             int bestValueIndex = -1;
             if (!currentPath.empty()) {
                 int k = 0;
-                while (communicationId == -1 and k < processes.size()) {
+                while (communicationId == -1 && k < processes.size()) {
                     bestValueIndex = indexArr[t->getId()][k];
                     communicationId = container.getBestPossibleConnection(bestValueIndex, currentPath.at(
                             currentIndex - 1).getProcessId());

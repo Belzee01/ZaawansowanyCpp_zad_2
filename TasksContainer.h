@@ -116,7 +116,7 @@ public:
         int bestConnection = -1;
         int bestConnectionCost = INT_MAX;
         for (auto &c: comm) {
-            if (c.getProcConnections().at(startProcId) == 1 and c.getProcConnections().at(endProcId) == 1) {
+            if (c.getProcConnections().at(startProcId) == 1 && c.getProcConnections().at(endProcId) == 1) {
                 if (c.getCost() < bestConnectionCost) {
                     bestConnection = c.getId();
                     bestConnectionCost = c.getCost();
