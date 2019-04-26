@@ -9,37 +9,31 @@
 
 using namespace std;
 
-template<class Com, class C, class Tm>
 class GraphStepper {
 private:
-    vector<vector<Task<C, Tm> *>> globalPaths;
     int counter;
 
-    bool getPaths(vector<Task<C, Tm> *> &paths, int startId, int endId, Task<C, Tm> *taskArr,
+    template<class C, class Tm>
+    bool getPaths(vector<vector<Task<C, Tm> *>> &globalPaths, vector<Task<C, Tm> *> &paths, int startId, int endId,
+                  Task<C, Tm> *taskArr,
                   map<Task<C, Tm> *, list<Task<C, Tm> *>> tasksMap);
 
 public:
     GraphStepper();
 
-    void startSearch(int startId, int endId, TasksContainer<Com, C, Tm> container);
-
-    const vector<vector<Task<C, Tm> *>> &getGlobalPaths() const;
+    template<class Com, class C, class Tm>
+    vector<vector<Task<C, Tm> *>> startSearch(int startId, int endId, TasksContainer<Com, C, Tm> container);
 };
 
-template<class Com, class C, class Tm>
-GraphStepper<Com, C, Tm>::GraphStepper() {
+GraphStepper::GraphStepper() {
     this->counter = 0;
 }
 
-template<class Com, class C, class Tm>
-const vector<vector<Task<C, Tm> *>> &GraphStepper<Com, C, Tm>::getGlobalPaths() const {
-    return globalPaths;
-}
-
-template<class Com, class C, class Tm>
+template<class C, class Tm>
 bool
-GraphStepper<Com, C, Tm>::getPaths(vector<Task<C, Tm> *> &paths, int startId, int endId, Task<C, Tm> *taskArr,
-                                      map<Task<C, Tm> *, list<Task<C, Tm> *>> tasksMap) {
+GraphStepper::getPaths(vector<vector<Task<C, Tm> *>> &globalPaths, vector<Task<C, Tm> *> &paths,
+                       int startId, int endId, Task<C, Tm> *taskArr,
+                       map<Task<C, Tm> *, list<Task<C, Tm> *>> tasksMap) {
     Task<C, Tm> *currentTask = &taskArr[startId];
 
     if (startId == endId) {
@@ -56,7 +50,7 @@ GraphStepper<Com, C, Tm>::getPaths(vector<Task<C, Tm> *> &paths, int startId, in
         return false;
     }
     for (auto &child : childs) {
-        bool found = getPaths(paths, child->getId(), endId, taskArr, tasksMap);
+        bool found = getPaths(globalPaths, paths, child->getId(), endId, taskArr, tasksMap);
         if (!found) {
             paths.pop_back();
         } else {
@@ -68,10 +62,15 @@ GraphStepper<Com, C, Tm>::getPaths(vector<Task<C, Tm> *> &paths, int startId, in
 }
 
 template<class Com, class C, class Tm>
-void GraphStepper<Com, C, Tm>::startSearch(int startId, int endId, TasksContainer<Com, C, Tm> container) {
+vector<vector<Task<C, Tm> *>>
+GraphStepper::startSearch(int startId, int endId, TasksContainer<Com, C, Tm> container) {
+
+    vector<vector<Task<C, Tm> *>> globalPaths;
 
     vector<Task<C, Tm> *> path;
-    getPaths(path, startId, endId, container.getTasks(), container.getTasksMap());
+    getPaths(globalPaths, path, startId, endId, container.getTasks(), container.getTasksMap());
+
+    return globalPaths;
 }
 
 

@@ -122,7 +122,7 @@ public:
 
     template <class Com, class C, class Tm>
     static vector<Path<C, Tm>>
-    establishPreferredProcesses(const GraphStepper<Com, C, Tm> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container);
+    establishPreferredProcesses(vector<vector<Task<C, Tm> *>> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container);
 
     template <class Com, class C, class Tm>
     static vector<Path<C, Tm>> calculateFinalCostAndTime(vector<Path<C, Tm>> paths, TasksContainer<Com, C, Tm> container);
@@ -167,8 +167,8 @@ DecisionMaker::prepareForOutput(vector<Path<C, Tm>> paths, TasksContainer<Com, C
 
 template<class Com, class C, class Tm>
 vector<Path<C, Tm>>
-DecisionMaker::establishPreferredProcesses(const GraphStepper<Com, C, Tm> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container) {
-    vector<vector<Task<C, Tm> *>> tasksPaths = stepper.getGlobalPaths();
+DecisionMaker::establishPreferredProcesses(vector<vector<Task<C, Tm> *>> &stepper, int **indexArr, TasksContainer<Com, C, Tm> container) {
+    vector<vector<Task<C, Tm> *>> tasksPaths = stepper;
     const vector<Process<>> &processes = container.getProcesses();
 
     vector<vector<TaskIdProcessId>> establishedTaskPaths;

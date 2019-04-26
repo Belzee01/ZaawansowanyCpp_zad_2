@@ -29,10 +29,10 @@ int main(int args, char **argv) {
     tcMatrix->evaluateIndexArray(taskContainer->getTasks());
     tcMatrix->printOutIndexMatrix();
 
-    auto stepper = new GraphStepper<int, float, float>();
-    stepper->startSearch(0, 8, *taskContainer);
+    auto stepper = new GraphStepper();
+    auto initialPaths = stepper->startSearch(0, 8, *taskContainer);
 
-    auto paths = DecisionMaker::establishPreferredProcesses<int, float, float>(*stepper, tcMatrix->getIndexArr(),
+    auto paths = DecisionMaker::establishPreferredProcesses(initialPaths, tcMatrix->getIndexArr(),
                                                                                       *taskContainer);
     for (auto &path : paths) {
         for (auto &p : path.getPath()) {
