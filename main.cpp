@@ -28,9 +28,17 @@ int main(int args, char **argv) {
     auto tcMatrix = new TimesCostsMatrix(*taskContainer);
     tcMatrix->evaluateIndexArray(taskContainer->getTasks());
     tcMatrix->printOutIndexMatrix();
-
     auto stepper = new GraphStepper();
-    auto initialPaths = stepper->startSearch(0, 8, *taskContainer);
+
+    int endId = -1;
+    while (endId < 0 || endId > taskContainer->getTasksSize()) {
+        cout<<endl;
+        cout<<"Pass endId value: ";
+        cin >> endId;
+        cout<<endl;
+    }
+
+    auto initialPaths = stepper->startSearch(0, endId, *taskContainer);
 
     auto paths = DecisionMaker::establishPreferredProcesses(initialPaths, tcMatrix->getIndexArr(),
                                                                                       *taskContainer);
