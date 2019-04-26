@@ -6,6 +6,7 @@
 #include "Process.h"
 #include <list>
 #include <map>
+#include <limits.h>
 
 using namespace std;
 
