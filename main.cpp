@@ -11,8 +11,6 @@
 #include "Communication.h"
 #include "Parsers.h"
 #include "TimesCostsMatrix.h"
-#include "GraphStepper.h"
-#include "OutputWriter.h"
 #include "Node.h"
 #include <set>
 #include <algorithm>
@@ -54,8 +52,7 @@ void bubbleSort(vector<Node *> *arr) {
             }
 }
 
-void pickFastestNode(vector<Node *> *level, TasksContainer<int, float, float> *tasksContainer,
-                     TimesCostsMatrix *costsMatrix) {
+void pickFastestNode(vector<Node *> *level, TasksContainer<int, float, float> *tasksContainer) {
     map<int, vector<Node *>> processBasedNodes;
 
     for (auto node : *level) {
@@ -76,19 +73,18 @@ void pickFastestNode(vector<Node *> *level, TasksContainer<int, float, float> *t
 
 //vector of processing times, each entry is identified by processId
 vector<float>
-time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> levels,
-     TimesCostsMatrix *costsMatrix) {
+time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> levels) {
     for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
         processingTimes.push_back(0.0);
     }
 
     for (auto level : levels) {
-        pickFastestNode(&level, tasksContainer, costsMatrix);
+        pickFastestNode(&level, tasksContainer);
         for (auto node : level) {
             float communicationCost = 0.0;
             for (auto parent: node->parent) {
+                int communicationId = tasksContainer->getBestPossibleConnection(parent->processId, node->processId);
                 if (node->processId != parent->processId) {
-                    int communicationId = tasksContainer->getBestPossibleConnection(parent->processId, node->processId);
                     node->communicationChannelId = communicationId;
                     communicationCost += 0.0;//tasksContainer->getComm()[communicationId].getCost();
                 }
@@ -115,8 +111,7 @@ time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksCont
 }
 
 float
-cost(vector<float> processingTimes, TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> levels,
-     TimesCostsMatrix *costsMatrix) {
+cost(TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> levels) {
 
     vector<int> communicationAlreadyPaid;
 
@@ -129,11 +124,16 @@ cost(vector<float> processingTimes, TasksContainer<int, float, float> *tasksCont
                           node->communicationChannelId) !=
                 communicationAlreadyPaid.end()) {
 
+            } else if (node->communicationChannelId == -1) {
+
             } else {
                 communicationAlreadyPaid.push_back(node->communicationChannelId);
-                cost += tasksContainer->getComm().at(node->communicationChannelId).getCost();
+                cost += tasksContainer->getComm()[node->communicationChannelId].getCost();
             }
-            cost += tasksContainer->getProcesses().at(node->processId).getEffectiveCost();
+            if(tasksContainer->getProcesses()[node->processId].getTypeOfProcess() == 0) {
+                cost += tasksContainer->getProcesses()[node->processId].getInitialCost();
+            }
+            cost += tasksContainer->getProcesses()[node->processId].getEffectiveCost();
             cost += tasksContainer->getTasks()[node->taskId].getCosts()[node->processId];
         }
     }
@@ -164,32 +164,7 @@ int main(int args, char **argv) {
 
     vector<float> processingTimes;
 
-    time(processingTimes, taskContainer, levels, tcMatrix);
+    time(processingTimes, taskContainer, levels);
+    cost(taskContainer, levels);
 
-//    auto stepper = new GraphStepper();
-//
-//    int endId = -1;
-//    while (endId < 0 || endId > taskContainer->getTasksSize()) {
-//        cout<<endl;
-//        cout<<"Pass endId value: ";
-//        cin >> endId;
-//        cout<<endl;
-//    }
-//
-//    auto initialPaths = stepper->startSearch(0, endId, *taskContainer);
-//
-//    auto paths = DecisionMaker::establishPreferredProcesses(initialPaths, tcMatrix->getIndexArr(),
-//                                                                                      *taskContainer);
-//    for (auto &path : paths) {
-//        for (auto &p : path.getPath()) {
-//            cout << p.getTaskId() << " x " << p.getProcessId() << " x " << p.getComm() << " -> ";
-//        }
-//        cout << endl;
-//    }
-//
-//    paths = DecisionMaker::calculateFinalCostAndTime(paths, *taskContainer);
-//    auto outputData = DecisionMaker::prepareForOutput(paths, *taskContainer);
-//
-//    auto outputWriter = OutputWriter();
-//    outputWriter.writeToFile(outputData);
 }

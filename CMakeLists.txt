@@ -3,4 +3,4 @@ project(zad2)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(test_1 main.cpp Process.cpp Process.h Task.h TasksContainer.h Communication.h Parsers.h TimesCostsMatrix.h GraphStepper.h DecisionMaker.h OutputWriter.h Node.h)
+add_executable(test_1 main.cpp Process.cpp Process.h Task.h TasksContainer.h Communication.h Parsers.h TimesCostsMatrix.h Node.h)
