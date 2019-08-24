@@ -130,7 +130,7 @@ cost(TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> l
                 communicationAlreadyPaid.push_back(node->communicationChannelId);
                 cost += tasksContainer->getComm()[node->communicationChannelId].getCost();
             }
-            if(tasksContainer->getProcesses()[node->processId].getTypeOfProcess() == 0) {
+            if (tasksContainer->getProcesses()[node->processId].getTypeOfProcess() == 0) {
                 cost += tasksContainer->getProcesses()[node->processId].getInitialCost();
             }
             cost += tasksContainer->getProcesses()[node->processId].getEffectiveCost();
@@ -138,6 +138,72 @@ cost(TasksContainer<int, float, float> *tasksContainer, vector<vector<Node *>> l
         }
     }
     return cost;
+}
+
+Node *findNodeWithTaskId(vector<Node *> clonedNodes, Node *node) {
+    for (auto n : clonedNodes) {
+        if (n->taskId == node->taskId)
+            return n;
+    }
+    return nullptr;
+}
+
+Node *clone(vector<Node *> clonedNodes, vector<Node *> flatten) {
+
+    for (int i = 0; i < clonedNodes.size(); ++i) {
+        for (auto p : flatten[i]->parent) {
+            Node *parent = findNodeWithTaskId(clonedNodes, p);
+            clonedNodes[i]->parent.push_back(parent);
+        }
+        for (auto c : flatten[i]->children) {
+            Node *child = findNodeWithTaskId(clonedNodes, c);
+            clonedNodes[i]->children.push_back(child);
+        }
+    }
+    return clonedNodes[0];
+}
+
+
+vector<Node *> initialClone(vector<vector<Node *>> levels, vector<Node *> *flatten) {
+    vector<Node *> clonedNodes;
+    for (auto level: levels) {
+        for (auto n : level) {
+            Node *cloneNode = new Node(*n);
+            clonedNodes.push_back(cloneNode);
+            flatten->push_back(n);
+        }
+    }
+    return clonedNodes;
+}
+
+struct IndexValue {
+    int i;
+    int j;
+    int g;
+
+    float value;
+};
+
+vector<IndexValue> rankingSort(vector<IndexValue> ranking) {
+
+}
+
+vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float k, float c, float punish = 0) {
+    vector<IndexValue> rankingIndexes;
+
+    for (int i = 0; i < graphContainer.size(); ++i) {
+        for (int j = 0; j < graphContainer[i].size(); ++j) {
+            for (int g = 0; g < graphContainer[i][j].size(); ++g) {
+                IndexValue F = {
+                        i, j, g, k * graphContainer[i][j][g]->cost * c * graphContainer[i][j][g]->time * punish
+                };
+                rankingIndexes.push_back(F);
+            }
+        }
+    }
+
+    rankingIndexes = rankingSort(rankingIndexes);
+    return rankingIndexes;
 }
 
 int main(int args, char **argv) {
@@ -155,16 +221,69 @@ int main(int args, char **argv) {
 
     Node *head = Node::parseToGraph(taskContainer, tcMatrix->getIndexArr());
 
+    //Level evaluation
     vector<vector<Node *>> levels;
     levels.emplace_back();
-
-    //TODO find way to get children on proper levels
     levels[0].push_back(head);
     BFS(&levels, head, 1);
 
-    vector<float> processingTimes;
 
+    //Processing times and cost evaluation
+    vector<float> processingTimes;
     time(processingTimes, taskContainer, levels);
     cost(taskContainer, levels);
 
+    //User based data
+    int alpha = 1;
+
+    float beta = 0.5;
+    float k = 0.5;
+    float c = 0.5;
+
+    while (alpha < 0) {
+        cout << "Pass positive alpha: ";
+        cin >> alpha;
+        cout << endl;
+    }
+
+    //TODO create array of alpha * tasks * proc
+    vector<vector<vector<Node *>>> graphContainer;
+    for (int i = 0; i < alpha; ++i) {
+        graphContainer.emplace_back();
+        for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+            graphContainer[i].emplace_back();
+        }
+    }
+
+    //TODO clone graph structure alpha * tasks * proc times
+
+    for (int i = 0; i < alpha; ++i) {
+        for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+            for (int g = 0; g < taskContainer->getProcSize(); ++g) {
+                vector<Node *> fllatenLevels;
+                vector<Node *> clonedGraph = initialClone(levels, &fllatenLevels);
+                Node *clonedHead = clone(clonedGraph, fllatenLevels);
+
+                graphContainer[i][j].push_back(clonedHead);
+            }
+        }
+    }
+
+    int PI = alpha * taskContainer->getTasksSize() * taskContainer->getProcSize();
+
+    //TODO pick solutions to be copied
+    vector<Node*> solutionToBeCopied; //Capital Gamma
+    int temp = 0;
+    while (temp++ < 100) {
+        vector<IndexValue> r = ranking(graphContainer, k, c);
+        for (int i = 0; i < r.size(); ++i) {
+            float probability = (PI - float(i)) / PI;
+            float rand;//TODO if probability more than random from uniform rand then copy the solution
+            if (probability >= rand) {
+                solutionToBeCopied.push_back(graphContainer[r[i].i][r[i].j][r[i].g]);
+            }
+        }
+    }
+
+    //TODO
 }

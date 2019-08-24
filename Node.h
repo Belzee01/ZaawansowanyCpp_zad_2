@@ -33,6 +33,12 @@ public:
         this->communicationChannelId = -1;
     }
 
+    Node(Node &other) : taskId(other.taskId), processId(other.processId), processingTime(other.processingTime),
+                        weight(other.weight), processed(other.processed),
+                        communicationChannelId(other.communicationChannelId),
+                        cost(other.cost), time(other.time) {
+    }
+
     static Node *parseToGraph(TasksContainer<int, float, float> *tasksContainer, int **indexArr) {
 
         vector<Node *> nodes;
@@ -45,7 +51,7 @@ public:
         }
 
         for (auto &it : tasksContainer->getTasksMap()) {
-            for (Node* node : nodes) {
+            for (Node *node : nodes) {
                 if (it.first->id == node->taskId) {
                     for (auto task : it.second) {
                         Node *child = nodes[task->id];
