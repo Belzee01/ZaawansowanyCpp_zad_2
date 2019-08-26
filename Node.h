@@ -22,16 +22,18 @@ public:
     float weight;
     bool processed;
     int communicationChannelId;
-    float cost;
-    float time;
+    float finalCost;
+    float finalTime;
 
+    int mutationIdx = -1;
 
     Node(int taskId, int processId, int processingTime) : taskId(taskId), processId(processId),
                                                           processingTime(processingTime) {
         this->weight = 0.0;
         this->processed = false;
-        this->cost = 0.0;
         this->communicationChannelId = -1;
+        this->finalCost = 9999999999.9;
+        this->finalTime = 9999999999.9;
     }
 
 
@@ -39,8 +41,9 @@ public:
 
     Node(Node &other) : taskId(other.taskId), processId(other.processId), processingTime(other.processingTime),
                         weight(other.weight), processed(other.processed),
-                        communicationChannelId(other.communicationChannelId),
-                        cost(other.cost), time(other.time) {
+                        communicationChannelId(other.communicationChannelId) {
+        this->finalCost = 9999999999.9;
+        this->finalTime = 9999999999.9;
     }
 
     static Node *parseToGraph(TasksContainer<int, float, float> *tasksContainer, int **indexArr) {
@@ -48,14 +51,10 @@ public:
         vector<Node *> nodes;
 
         Node *head = new Node(0, indexArr[0][0], 0);
-        head->time = tasksContainer->getTasks()[0].getTimes()[indexArr[0][0]];
-        head->cost = tasksContainer->getTasks()[0].getCosts()[indexArr[0][0]];
         nodes.push_back(head);
 
         for (int i = 1; i < tasksContainer->getTasksSize(); ++i) {
             Node *node = new Node(i, indexArr[i][0], 0);
-            node->time = tasksContainer->getTasks()[i].getTimes()[indexArr[i][0]];
-            node->cost = tasksContainer->getTasks()[i].getCosts()[indexArr[i][0]];
             nodes.push_back(node);
         }
 

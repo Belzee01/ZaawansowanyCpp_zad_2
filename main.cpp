@@ -42,11 +42,12 @@ void BFS(vector<vector<Node *>> *levels, Node *node, int counter = 0) {
     }
 }
 
-void bubbleSort(vector<Node *> *arr) {
+void bubbleSort(vector<Node *> *arr, TasksContainer<int, float, float> *tasksContainer) {
     int i, j;
     for (i = 0; i < (*arr).size() - 1; i++)
         for (j = 0; j < (*arr).size() - i - 1; j++)
-            if ((*arr)[j]->time > (*arr)[j + 1]->time) {
+            if (tasksContainer->getTasks()[(*arr)[j]->taskId].getTimes()[(*arr)[j]->processId] >
+                tasksContainer->getTasks()[(*arr)[j + 1]->taskId].getTimes()[(*arr)[j + 1]->processId]) {
                 Node *temp = (*arr)[j];
                 (*arr)[j] = (*arr)[j + 1];
                 (*arr)[j + 1] = temp;
@@ -66,7 +67,7 @@ void pickFastestNode(vector<Node *> *level, TasksContainer<int, float, float> *t
 
     level->clear();
     for (auto nodes: processBasedNodes) {
-        bubbleSort(&nodes.second);
+        bubbleSort(&nodes.second, tasksContainer);
         level->insert(level->begin(), nodes.second.begin(), nodes.second.end());
     }
 }
@@ -183,26 +184,45 @@ struct IndexValue {
     float value;
 };
 
-vector<IndexValue> rankingSort(vector<IndexValue> ranking) {
+void indexRankingBubbleSort(vector<IndexValue *> *arr) {
 
-    return ranking;
 }
 
-vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float k, float c, float punish = 0) {
+
+void rankingSort(vector<IndexValue> *ranking) {
+    int i, j;
+    for (i = 0; i < (*ranking).size() - 1; i++)
+        for (j = 0; j < (*ranking).size() - i - 1; j++)
+            if ((*ranking)[j].value > (*ranking)[j + 1].value) {
+                IndexValue temp = (*ranking)[j];
+                (*ranking)[j] = (*ranking)[j + 1];
+                (*ranking)[j + 1] = temp;
+            }
+}
+
+vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float k, float c, float punish = 1) {
     vector<IndexValue> rankingIndexes;
 
     for (int i = 0; i < graphContainer.size(); ++i) {
         for (int j = 0; j < graphContainer[i].size(); ++j) {
             for (int g = 0; g < graphContainer[i][j].size(); ++g) {
+                Node*currentNode = graphContainer[i][j][g];
+                cout<<  graphContainer[i][j][g]->finalCost<<endl;
+                cout<<  graphContainer[i][j][g]->finalTime<<endl;
+
                 IndexValue F = {
-                        i, j, g, k * graphContainer[i][j][g]->cost * c * graphContainer[i][j][g]->time * punish
+                        i, j, g, k *
+                                 graphContainer[i][j][g]->finalCost
+                                 + c *
+                                 graphContainer[i][j][g]->finalTime
+                                 * punish
                 };
                 rankingIndexes.push_back(F);
             }
         }
     }
 
-    rankingIndexes = rankingSort(rankingIndexes);
+    rankingSort(&rankingIndexes);
     return rankingIndexes;
 }
 
@@ -234,13 +254,103 @@ void getPaths(vector<vector<Node *>> *allPaths, vector<Node *> *currentPath, Nod
     }
 }
 
+void applyRandMutation(Node *node) {
+    int mutationId = rand() % 4;
+
+    node->mutationIdx = mutationId;
+    for (auto child : node->children) {
+        applyRandMutation(child);
+    }
+}
+
+int findCheapestProcess(TasksContainer<int, float, float> *tasksContainer) {
+    float tempMin = 99999999;
+
+    int minIdx = -1;
+    for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
+        if (tasksContainer->getProcesses()[i].getInitialCost() < tempMin) {
+            tempMin = tasksContainer->getProcesses()[i].getInitialCost();
+            minIdx = i;
+        }
+    }
+    return minIdx;
+}
+
+Node *findTaskWithMostExpensiveTK(TasksContainer<int, float, float> *tasksContainer, Node *node,
+                                  Node *currentSelect = nullptr) {
+    if (currentSelect == nullptr)
+        currentSelect = node;
+
+    float currentSelectTK = tasksContainer->getTasks()[currentSelect->taskId].getCosts()[currentSelect->processId] *
+                            tasksContainer->getTasks()[currentSelect->taskId].getTimes()[currentSelect->processId];
+
+    float nodeTK = tasksContainer->getTasks()[node->taskId].getCosts()[node->processId] *
+                   tasksContainer->getTasks()[node->taskId].getTimes()[node->processId];
+    if (currentSelectTK < nodeTK) {
+
+        currentSelect = node;
+    }
+
+    for (auto child : node->children) {
+        currentSelect = findTaskWithMostExpensiveTK(tasksContainer, child, currentSelect);
+    }
+
+    return currentSelect;
+}
+
+int getOptimalProcessForTask(Node *node, TasksContainer<int, float, float> *tasksContainer) {
+
+    int minProcId = -1;
+    float minTK = 99999999999.0;
+    for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
+        float tempTK = tasksContainer->getTasks()[node->taskId].getTimes()[i] *
+                       tasksContainer->getTasks()[node->taskId].getCosts()[i];
+
+        if (tempTK < minTK) {
+            minTK = tempTK;
+            minProcId = i;
+        }
+    }
+    return minProcId;
+}
+
+int getCheapestProcessForTask(Node *node, TasksContainer<int, float, float> *tasksContainer) {
+
+    int minProcId = -1;
+    float minK = 99999999999.0;
+    for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
+        float tempK = tasksContainer->getTasks()[node->taskId].getCosts()[i];
+
+        if (tempK < minK) {
+            minK = tempK;
+            minProcId = i;
+        }
+    }
+    return minProcId;
+}
+
+int getFastestProcessForTask(Node *node, TasksContainer<int, float, float> *tasksContainer) {
+
+    int minProcId = -1;
+    float minK = 99999999999.0;
+    for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
+        float tempK = tasksContainer->getTasks()[node->taskId].getTimes()[i];
+
+        if (tempK < minK) {
+            minK = tempK;
+            minProcId = i;
+        }
+    }
+    return minProcId;
+}
+
 vector<Node *> findMostExpensivePath(vector<vector<Node *>> paths, TasksContainer<int, float, float> *tasksContainer) {
 
     int maxPathId = 0;
     float tempCost = 0.0;
     for (int i = 0; i < paths.size(); ++i) {
         float totalCost = 0.0;
-        for(auto node: paths[i]) {
+        for (auto node: paths[i]) {
             totalCost += tasksContainer->getProcesses()[node->processId].getEffectiveCost();
             totalCost += tasksContainer->getTasks()[node->taskId].getCosts()[node->processId];
         }
@@ -252,13 +362,74 @@ vector<Node *> findMostExpensivePath(vector<vector<Node *>> paths, TasksContaine
     return paths[maxPathId];
 }
 
+void applyCheapestProcesses(vector<Node *> nodes, TasksContainer<int, float, float> *tasksContainer) {
+
+    for (auto node: nodes) {
+        int procId = getCheapestProcessForTask(node, tasksContainer);
+        node->processId = procId;
+    }
+}
+
+void applyFastestProcesses(vector<Node *> nodes, TasksContainer<int, float, float> *tasksContainer) {
+
+    for (auto node: nodes) {
+        int procId = getFastestProcessForTask(node, tasksContainer);
+        node->processId = procId;
+    }
+}
+
+void groupByProcessesAndApply(Node **nodes, TasksContainer<int, float, float> *tasksContainer) {
+
+    vector<vector<Node *>> res;
+    for (auto p : tasksContainer->getProcesses()) {
+        res.emplace_back();
+    }
+    //pogrupuj po processach
+    for (int i = 0; i < tasksContainer->getTasksSize(); ++i) {
+        res[nodes[i]->processId].push_back(nodes[i]);
+    }
+    vector<Node *> maxGroup;
+    int maxProcId = -1;
+    vector<Node *> minGroup;
+    int minProcId = -1;
+
+    int tempMaxSize = 0;
+    int tempMinSize = INT_MAX;
+
+    //najbardziej obciazony
+    //najmnije obciazony
+    for (int j = 0; j < res.size(); ++j) {
+        if (res[j].size() > tempMaxSize) {
+            tempMaxSize = res[j].size();
+            maxGroup = res[j];
+            maxProcId = j;
+        }
+        if (res[j].size() < tempMinSize) {
+            tempMinSize = res[j].size();
+            minGroup = res[j];
+            minProcId = j;
+        }
+    }
+
+    //find longest task to be executed
+    float maxTime = -1.0;
+    Node *longestTask = nullptr;
+    for (auto node: maxGroup) {
+        if (tasksContainer->getTasks()[node->taskId].getTimes()[maxProcId] > maxTime) {
+            maxTime = tasksContainer->getTasks()[node->taskId].getTimes()[maxProcId];
+            longestTask = node;
+        }
+    }
+    longestTask->processId = minProcId;
+}
+
 vector<Node *> findCriticalPath(vector<vector<Node *>> paths, TasksContainer<int, float, float> *tasksContainer) {
 
     int maxPathId = 0;
     float tempTime = 0.0;
     for (int i = 0; i < paths.size(); ++i) {
         float totalTime = 0.0;
-        for(auto node: paths[i]) {
+        for (auto node: paths[i]) {
             totalTime += tasksContainer->getProcesses()[node->processId].getStartDelay();
             totalTime += tasksContainer->getTasks()[node->processId].getTimes()[node->processId];
         }
@@ -361,7 +532,6 @@ int main(int args, char **argv) {
 
     int PI = alpha * taskContainer->getTasksSize() * taskContainer->getProcSize();
 
-
     //crossover solutions
     int crossover = int(floor(gamma * PI));
     if (crossover % 2 != 0.0)
@@ -378,6 +548,30 @@ int main(int args, char **argv) {
 
     int temp = 0;
     while (temp++ < 100) {
+        //TODO calculate cost and time for each graph
+        for (int i = 0; i < alpha; ++i) {
+            for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+                for (int g = 0; g < taskContainer->getProcSize(); ++g) {
+                    //Level evaluation
+                    vector<vector<Node *>> localLevels;
+                    localLevels.emplace_back();
+                    localLevels[0].push_back(graphContainer[i][j][g]);
+                    BFS(&localLevels, graphContainer[i][j][g], 1);
+
+
+                    //Processing times and cost evaluation
+                    vector<float> times;
+                    times = time(times, taskContainer, localLevels);
+
+                    float currentCost = cost(taskContainer, localLevels);
+                    Node* currentNodeHead = graphContainer[i][j][g];
+                    currentNodeHead->finalTime = *max_element(times.begin(), times.end());
+                    currentNodeHead->finalCost = currentCost;
+                }
+            }
+        }
+
+
         //TODO pick solutions to be copied
         vector<IndexValue> r = ranking(graphContainer, k, c);
         for (int i = 0; i < r.size(); ++i) {
@@ -471,20 +665,32 @@ int main(int args, char **argv) {
                             vector<Node *> currentPath;
                             getPaths(&paths, &currentPath, node);
 
-                            vector<Node*> mostexpensive = findMostExpensivePath(paths, taskContainer);
-                            vector<Node*> critical = findCriticalPath(paths, taskContainer);
-
                             //TODO mutate
-                            int option = rand() % 4;
+                            int option = rand() % 4 + 1;
                             switch (option) {
-                                case 0:
+                                case 1: {
+                                    vector<Node *> mostexpensive = findMostExpensivePath(paths, taskContainer);
+                                    applyCheapestProcesses(mostexpensive, taskContainer);
+                                }
+                                    break;
+                                case 2: {
+                                    vector<Node *> critical = findCriticalPath(paths, taskContainer);
+                                    applyFastestProcesses(critical, taskContainer);
+                                }
+                                    break;
+                                case 3: {
+                                    Node *selected = findTaskWithMostExpensiveTK(taskContainer, node);
+                                    //find process with cheapest processing costs
+                                    int procId = getOptimalProcessForTask(selected, taskContainer);
+                                    selected->processId = procId;
+                                }
+                                    break;
+                                case 4: {
+                                    Node **fllatten = new Node *[taskContainer->getTasksSize()];
+                                    flattenToArray(fllatten, node);
 
-                                    break;
-                                case 1:
-                                    break;
-                                case 2:
-                                    break;
-                                case 3:
+                                    groupByProcessesAndApply(fllatten, taskContainer);
+                                }
                                     break;
 
                                 default:
