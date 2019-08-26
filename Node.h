@@ -25,6 +25,7 @@ public:
     float cost;
     float time;
 
+
     Node(int taskId, int processId, int processingTime) : taskId(taskId), processId(processId),
                                                           processingTime(processingTime) {
         this->weight = 0.0;
@@ -32,6 +33,7 @@ public:
         this->cost = 0.0;
         this->communicationChannelId = -1;
     }
+
 
     Node() {}
 
@@ -46,10 +48,15 @@ public:
         vector<Node *> nodes;
 
         Node *head = new Node(0, indexArr[0][0], 0);
+        head->time = tasksContainer->getTasks()[0].getTimes()[indexArr[0][0]];
+        head->cost = tasksContainer->getTasks()[0].getCosts()[indexArr[0][0]];
         nodes.push_back(head);
 
         for (int i = 1; i < tasksContainer->getTasksSize(); ++i) {
-            nodes.push_back(new Node(i, indexArr[i][0], 0));
+            Node *node = new Node(i, indexArr[i][0], 0);
+            node->time = tasksContainer->getTasks()[i].getTimes()[indexArr[i][0]];
+            node->cost = tasksContainer->getTasks()[i].getCosts()[indexArr[i][0]];
+            nodes.push_back(node);
         }
 
         for (auto &it : tasksContainer->getTasksMap()) {
@@ -57,6 +64,9 @@ public:
                 if (it.first->id == node->taskId) {
                     for (auto task : it.second) {
                         Node *child = nodes[task->id];
+                        int communicationId = tasksContainer->getBestPossibleConnection(node->processId,
+                                                                                        child->processId);
+                        child->communicationChannelId = communicationId;
                         child->parent.push_back(node);
                         node->children.push_back(child);
                     }

@@ -46,7 +46,7 @@ void bubbleSort(vector<Node *> *arr) {
     int i, j;
     for (i = 0; i < (*arr).size() - 1; i++)
         for (j = 0; j < (*arr).size() - i - 1; j++)
-            if ((*arr)[j]->cost > (*arr)[j + 1]->cost) {
+            if ((*arr)[j]->time > (*arr)[j + 1]->time) {
                 Node *temp = (*arr)[j];
                 (*arr)[j] = (*arr)[j + 1];
                 (*arr)[j + 1] = temp;
@@ -59,7 +59,6 @@ void pickFastestNode(vector<Node *> *level, TasksContainer<int, float, float> *t
     for (auto node : *level) {
         for (int i = 0; i < tasksContainer->getProcSize(); ++i) {
             if (node->processId == i) {
-                node->time = tasksContainer->getTasks()[node->taskId].getTimes()[node->processId];
                 processBasedNodes[i].push_back(node);
             }
         }
@@ -84,9 +83,7 @@ time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksCont
         for (auto node : level) {
             float communicationCost = 0.0;
             for (auto parent: node->parent) {
-                int communicationId = tasksContainer->getBestPossibleConnection(parent->processId, node->processId);
                 if (node->processId != parent->processId) {
-                    node->communicationChannelId = communicationId;
                     communicationCost += 0.0;//tasksContainer->getComm()[communicationId].getCost();
                 }
             }
@@ -103,7 +100,8 @@ time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksCont
             }
 
             processingTimes[node->processId] +=
-                    node->time + communicationCost
+                    tasksContainer->getTasks()[node->taskId].getTimes()[node->processId]
+                    + communicationCost
                     + (maxProcessingTime - processingTimes[node->processId]);
             node->processingTime = processingTimes[node->processId];
         }
@@ -218,6 +216,24 @@ void flattenToArray(Node **flatArray, Node *node) {
         flattenToArray(flatArray, n);
     }
 }
+
+//OPTION 0
+void minCostMostExpensivePath(Node *head) {
+    //TODO find most expensive path
+
+}
+
+//OPTION 1
+
+
+
+//OPTION 2
+
+
+
+
+//OPTION 3
+
 
 int main(int args, char **argv) {
 
@@ -387,7 +403,7 @@ int main(int args, char **argv) {
             for (int i = 0; i < alpha; ++i) {
                 for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
                     for (int g = 0; g < taskContainer->getProcSize(); ++g) {
-                        Node* node = graphContainer[i][j][g];
+                        Node *node = graphContainer[i][j][g];
                         if (std::find(solutionToBeCross.begin(), solutionToBeCross.end(), node) !=
                             solutionToBeCross.end()) {
                         } else if (std::find(solutionToBeCopied.begin(), solutionToBeCopied.end(), node) !=
@@ -395,7 +411,21 @@ int main(int args, char **argv) {
                         } else {
 
                             //TODO mutate
+                            int option = rand() % 4;
+                            switch (option) {
+                                case 0:
 
+                                    break;
+                                case 1:
+                                    break;
+                                case 2:
+                                    break;
+                                case 3:
+                                    break;
+
+                                default:
+                                    break;
+                            }
 
                             solutionToBeMutated.push_back(node);
                         }
