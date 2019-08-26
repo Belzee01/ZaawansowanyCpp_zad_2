@@ -14,6 +14,7 @@
 #include "Node.h"
 #include <set>
 #include <algorithm>
+#include <math.h>
 
 
 using namespace std;
@@ -186,6 +187,7 @@ struct IndexValue {
 
 vector<IndexValue> rankingSort(vector<IndexValue> ranking) {
 
+    return ranking;
 }
 
 vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float k, float c, float punish = 0) {
@@ -206,7 +208,20 @@ vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float 
     return rankingIndexes;
 }
 
+float uniformRand() {
+    return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+}
+
+void flattenToArray(Node **flatArray, Node *node) {
+    flatArray[node->taskId] = node;
+    for (auto n : node->children) {
+        flattenToArray(flatArray, n);
+    }
+}
+
 int main(int args, char **argv) {
+
+    srand(static_cast <unsigned> (time(0)));
 
     auto *parser = new Parsers<float, float, int>();
     auto *taskContainer = parser->parse(argv[1]);
@@ -236,9 +251,10 @@ int main(int args, char **argv) {
     //User based data
     int alpha = 1;
 
-    float beta = 0.5;
     float k = 0.5;
     float c = 0.5;
+
+    float beta = 0.3, gamma = 0.4, theta = 0.3;
 
     while (alpha < 0) {
         cout << "Pass positive alpha: ";
@@ -271,19 +287,127 @@ int main(int args, char **argv) {
 
     int PI = alpha * taskContainer->getTasksSize() * taskContainer->getProcSize();
 
-    //TODO pick solutions to be copied
-    vector<Node*> solutionToBeCopied; //Capital Gamma
+
+    //crossover solutions
+    int crossover = int(floor(gamma * PI));
+    if (crossover % 2 != 0.0)
+        crossover += 1;
+    vector<Node *> solutionToBeCross;
+
+    //copied solutions:
+    int copied = int(floor(beta * PI));
+    vector<Node *> solutionToBeCopied;
+
+    //mutating solutions
+    int mutation = PI - copied - crossover;
+    vector<Node *> solutionToBeMutated;
+
     int temp = 0;
     while (temp++ < 100) {
+        //TODO pick solutions to be copied
         vector<IndexValue> r = ranking(graphContainer, k, c);
         for (int i = 0; i < r.size(); ++i) {
             float probability = (PI - float(i)) / PI;
-            float rand;//TODO if probability more than random from uniform rand then copy the solution
-            if (probability >= rand) {
-                solutionToBeCopied.push_back(graphContainer[r[i].i][r[i].j][r[i].g]);
+            if (solutionToBeCopied.size() < copied) {
+                if (probability >= uniformRand()) {
+                    solutionToBeCopied.push_back(graphContainer[r[i].i][r[i].j][r[i].g]);
+                }
             }
         }
-    }
 
-    //TODO
+        //TODO crossover mechanism
+        while (solutionToBeCross.size() < crossover) {
+
+            int firstIndex;
+            int secondIndex;
+            int thirdIndex;
+
+            Node *firstNode = nullptr;
+            while (firstNode == nullptr) {
+                firstIndex = rand() % alpha;
+                secondIndex = rand() % taskContainer->getTasksSize();
+                thirdIndex = rand() % taskContainer->getProcSize();
+                firstNode = graphContainer[firstIndex][secondIndex][thirdIndex];
+                if (std::find(solutionToBeCross.begin(), solutionToBeCross.end(), firstNode) !=
+                    solutionToBeCross.end()) {
+                    firstNode = nullptr;
+                } else if (std::find(solutionToBeCopied.begin(), solutionToBeCopied.end(), firstNode) !=
+                           solutionToBeCopied.end()) {
+                    firstNode = nullptr;
+                }
+            }
+
+            Node *secondNode = nullptr;
+            while (secondNode == nullptr) {
+                firstIndex = rand() % alpha;
+                secondIndex = rand() % taskContainer->getTasksSize();
+                thirdIndex = rand() % taskContainer->getProcSize();
+                secondNode = graphContainer[firstIndex][secondIndex][thirdIndex];
+                if (std::find(solutionToBeCross.begin(), solutionToBeCross.end(), secondNode) !=
+                    solutionToBeCross.end()) {
+                    secondNode = nullptr;
+                } else if (std::find(solutionToBeCopied.begin(), solutionToBeCopied.end(), secondNode) !=
+                           solutionToBeCopied.end()) {
+                    secondNode = nullptr;
+                }
+            }
+
+            solutionToBeCross.push_back(firstNode);
+            solutionToBeCross.push_back(secondNode);
+
+            Node **flatArray1 = new Node *[taskContainer->getTasksSize()];
+            flattenToArray(flatArray1, firstNode);
+
+            Node **flatArray2 = new Node *[taskContainer->getTasksSize()];
+            flattenToArray(flatArray2, secondNode);
+
+            int split = rand() % (taskContainer->getTasksSize() - 2) + 1;
+            //Crossover
+            for (int i = 0; i < split; ++i) {
+                Node *tempNode1 = new Node();
+
+                tempNode1->processId = flatArray1[i]->processId;
+                tempNode1->communicationChannelId = flatArray1[i]->communicationChannelId;
+
+                Node *tempNode2 = new Node();
+
+                tempNode2->processId = flatArray2[i]->processId;
+                tempNode2->communicationChannelId = flatArray2[i]->communicationChannelId;
+
+                flatArray1[i]->processId = tempNode2->processId;
+                flatArray1[i]->communicationChannelId = tempNode2->communicationChannelId;
+
+                flatArray2[i]->processId = tempNode1->processId;
+                flatArray2[i]->communicationChannelId = tempNode1->communicationChannelId;
+            }
+        }
+
+        //TODO mutatiom mechanism
+        while (solutionToBeMutated.size() < mutation) {
+            for (int i = 0; i < alpha; ++i) {
+                for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+                    for (int g = 0; g < taskContainer->getProcSize(); ++g) {
+                        Node* node = graphContainer[i][j][g];
+                        if (std::find(solutionToBeCross.begin(), solutionToBeCross.end(), node) !=
+                            solutionToBeCross.end()) {
+                        } else if (std::find(solutionToBeCopied.begin(), solutionToBeCopied.end(), node) !=
+                                   solutionToBeCopied.end()) {
+                        } else {
+
+                            //TODO mutate
+
+
+                            solutionToBeMutated.push_back(node);
+                        }
+                    }
+                }
+            }
+        }
+
+        solutionToBeCopied.clear();
+        solutionToBeCross.clear();
+        solutionToBeMutated.clear();
+    }
+    cout << copied;
+
 }

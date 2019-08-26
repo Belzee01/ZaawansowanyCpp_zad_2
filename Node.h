@@ -33,6 +33,8 @@ public:
         this->communicationChannelId = -1;
     }
 
+    Node() {}
+
     Node(Node &other) : taskId(other.taskId), processId(other.processId), processingTime(other.processingTime),
                         weight(other.weight), processed(other.processed),
                         communicationChannelId(other.communicationChannelId),
