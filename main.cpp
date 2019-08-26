@@ -217,23 +217,81 @@ void flattenToArray(Node **flatArray, Node *node) {
     }
 }
 
+void getPaths(vector<vector<Node *>> *allPaths, vector<Node *> *currentPath, Node *node) {
+
+    currentPath->push_back(node);
+    if (node->children.empty()) {
+        vector<Node *> persistPath;
+        for (auto p : *currentPath) {
+            persistPath.push_back(p);
+        }
+        allPaths->push_back(persistPath);
+        return;
+    }
+    for (auto n:node->children) {
+        getPaths(allPaths, currentPath, n);
+        currentPath->pop_back();
+    }
+}
+
+vector<Node *> findMostExpensivePath(vector<vector<Node *>> paths, TasksContainer<int, float, float> *tasksContainer) {
+
+    int maxPathId = 0;
+    float tempCost = 0.0;
+    for (int i = 0; i < paths.size(); ++i) {
+        float totalCost = 0.0;
+        for(auto node: paths[i]) {
+            totalCost += tasksContainer->getProcesses()[node->processId].getEffectiveCost();
+            totalCost += tasksContainer->getTasks()[node->taskId].getCosts()[node->processId];
+        }
+        if (totalCost > tempCost) {
+            tempCost = totalCost;
+            maxPathId = i;
+        }
+    }
+    return paths[maxPathId];
+}
+
+vector<Node *> findCriticalPath(vector<vector<Node *>> paths, TasksContainer<int, float, float> *tasksContainer) {
+
+    int maxPathId = 0;
+    float tempTime = 0.0;
+    for (int i = 0; i < paths.size(); ++i) {
+        float totalTime = 0.0;
+        for(auto node: paths[i]) {
+            totalTime += tasksContainer->getProcesses()[node->processId].getStartDelay();
+            totalTime += tasksContainer->getTasks()[node->processId].getTimes()[node->processId];
+        }
+        if (totalTime > tempTime) {
+            tempTime = totalTime;
+            maxPathId = i;
+        }
+    }
+    return paths[maxPathId];
+}
+
 //OPTION 0
-void minCostMostExpensivePath(Node *head) {
+void minCostMostExpensivePath(int taskSize, Node **nodes) {
     //TODO find most expensive path
 
 }
 
 //OPTION 1
+void fastestCreiticalPath() {
 
+}
 
 
 //OPTION 2
+void lowestKT() {
 
-
+}
 
 
 //OPTION 3
+void overloadedProcess() {
 
+}
 
 int main(int args, char **argv) {
 
@@ -409,6 +467,12 @@ int main(int args, char **argv) {
                         } else if (std::find(solutionToBeCopied.begin(), solutionToBeCopied.end(), node) !=
                                    solutionToBeCopied.end()) {
                         } else {
+                            vector<vector<Node *>> paths;
+                            vector<Node *> currentPath;
+                            getPaths(&paths, &currentPath, node);
+
+                            vector<Node*> mostexpensive = findMostExpensivePath(paths, taskContainer);
+                            vector<Node*> critical = findCriticalPath(paths, taskContainer);
 
                             //TODO mutate
                             int option = rand() % 4;
