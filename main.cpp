@@ -85,7 +85,11 @@ time(vector<float> processingTimes, TasksContainer<int, float, float> *tasksCont
             float communicationCost = 0.0;
             for (auto parent: node->parent) {
                 if (node->processId != parent->processId) {
-                    communicationCost += 0.0;//tasksContainer->getComm()[communicationId].getCost();
+                    if (tasksContainer->getTasks()[node->taskId].getWeight() <= 0.1)
+                        communicationCost += 0.0;//tasksContainer->getComm()[communicationId].getCost();
+                    else
+                        communicationCost += tasksContainer->getTasks()[node->taskId].getWeight() /
+                                             tasksContainer->getComm()[node->communicationChannelId].getCapacity();
                 }
             }
             float maxProcessingTime = 0.0;
@@ -184,10 +188,6 @@ struct IndexValue {
     float value;
 };
 
-void indexRankingBubbleSort(vector<IndexValue *> *arr) {
-
-}
-
 
 void rankingSort(vector<IndexValue> *ranking) {
     int i, j;
@@ -206,16 +206,16 @@ vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float 
     for (int i = 0; i < graphContainer.size(); ++i) {
         for (int j = 0; j < graphContainer[i].size(); ++j) {
             for (int g = 0; g < graphContainer[i][j].size(); ++g) {
-                Node*currentNode = graphContainer[i][j][g];
-                cout<<  graphContainer[i][j][g]->finalCost<<endl;
-                cout<<  graphContainer[i][j][g]->finalTime<<endl;
+                Node *currentNode = graphContainer[i][j][g];
+                cout << graphContainer[i][j][g]->finalCost << endl;
+                cout << graphContainer[i][j][g]->finalTime << endl;
 
                 IndexValue F = {
                         i, j, g, k *
                                  graphContainer[i][j][g]->finalCost
                                  + c *
-                                 graphContainer[i][j][g]->finalTime
-                                 * punish
+                                   graphContainer[i][j][g]->finalTime
+                                   * punish
                 };
                 rankingIndexes.push_back(F);
             }
@@ -441,32 +441,105 @@ vector<Node *> findCriticalPath(vector<vector<Node *>> paths, TasksContainer<int
     return paths[maxPathId];
 }
 
-//OPTION 0
-void minCostMostExpensivePath(int taskSize, Node **nodes) {
-    //TODO find most expensive path
+int lowestIncreaseInCommunicationCost(float currentCost, Node *node, Node *selectedNode,
+                                      TasksContainer<int, float, float> *tasksContainer) {
 
+    int selectedCommunicationId = selectedNode->communicationChannelId;
+    float lowestIncrease = 9999999.9;
+
+    for (int i = 0; i < tasksContainer->getComm().size(); ++i) {
+
+        vector<vector<Node *>> localLevels;
+        localLevels.emplace_back();
+        localLevels[0].push_back(node);
+        BFS(&localLevels, node, 1);
+
+        vector<Node *> fllatenLevels;
+        vector<Node *> clonedGraph = initialClone(localLevels, &fllatenLevels);
+        Node *clonedHead = clone(clonedGraph, fllatenLevels);
+
+        localLevels.clear();
+        localLevels.emplace_back();
+        localLevels[0].push_back(clonedHead);
+        BFS(&localLevels, clonedHead, 1);
+
+        Node **fllatten = new Node *[tasksContainer->getTasksSize()];
+        for (int j = 0; j < tasksContainer->getTasksSize(); ++j) {
+            fllatten[j] = nullptr;
+        }
+        flattenToArray(fllatten, clonedHead);
+
+        Node *toBeChanged = fllatten[selectedNode->taskId];
+        toBeChanged->communicationChannelId = i;
+
+        float increasedCost = cost(tasksContainer, localLevels);
+        if (increasedCost > currentCost) {
+            if (increasedCost < lowestIncrease) {
+                lowestIncrease = increasedCost;
+                selectedCommunicationId = i;
+            }
+        }
+    }
+
+    return selectedCommunicationId;
 }
 
-//OPTION 1
-void fastestCreiticalPath() {
+int highestBandwitch(TasksContainer<int, float, float> *tasksContainer) {
 
+    int commId = 0;
+    float highestBand = 0.0;
+
+    for (int i = 0; i < tasksContainer->getComm().size(); ++i) {
+        if (tasksContainer->getComm()[i].getCapacity() > highestBand) {
+            commId = i;
+            highestBand = tasksContainer->getComm()[i].getCapacity();
+        }
+    }
+    return commId;
 }
 
+int rarestUsedCommunication(Node **nodes, TasksContainer<int, float, float> *tasksContainer) {
 
-//OPTION 2
-void lowestKT() {
+    int *commCount = new int[tasksContainer->getComm().size()];
+    for (int j = 0; j < tasksContainer->getComm().size(); ++j) {
+        commCount[j] = 0;
+    }
 
+    for (int i = 0; i < tasksContainer->getTasksSize(); ++i) {
+        commCount[nodes[i]->communicationChannelId] += 1;
+    }
+
+    int commId = 0;
+    int lowestCommCount = 9999999;
+    for (int j = 0; j < tasksContainer->getComm().size(); ++j) {
+        if (commCount[j] < lowestCommCount) {
+            lowestCommCount = commCount[j];
+            commId = j;
+        }
+    }
+    return commId;
 }
 
+int lowestCostBandwith(TasksContainer<int, float, float> *tasksContainer) {
 
-//OPTION 3
-void overloadedProcess() {
+    int commId = 0;
+    float highestBand = 99999999.9;
 
+    for (int i = 0; i < tasksContainer->getComm().size(); ++i) {
+        if (tasksContainer->getComm()[i].getCapacity() * tasksContainer->getComm()[i].getCost() < highestBand) {
+            commId = i;
+            highestBand = tasksContainer->getComm()[i].getCapacity() * tasksContainer->getComm()[i].getCost();
+        }
+    }
+    return commId;
 }
 
 int main(int args, char **argv) {
 
     srand(static_cast <unsigned> (time(0)));
+
+    ofstream myfile;
+    myfile.open("F_ranking.txt");
 
     auto *parser = new Parsers<float, float, int>();
     auto *taskContainer = parser->parse(argv[1]);
@@ -547,7 +620,10 @@ int main(int args, char **argv) {
     vector<Node *> solutionToBeMutated;
 
     int temp = 0;
-    while (temp++ < 100) {
+    int terminationCount = 0;
+    Node *bestNode = nullptr;
+
+    while (temp++ < 10000 && terminationCount < 100) {
         //TODO calculate cost and time for each graph
         for (int i = 0; i < alpha; ++i) {
             for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
@@ -564,7 +640,7 @@ int main(int args, char **argv) {
                     times = time(times, taskContainer, localLevels);
 
                     float currentCost = cost(taskContainer, localLevels);
-                    Node* currentNodeHead = graphContainer[i][j][g];
+                    Node *currentNodeHead = graphContainer[i][j][g];
                     currentNodeHead->finalTime = *max_element(times.begin(), times.end());
                     currentNodeHead->finalCost = currentCost;
                 }
@@ -574,6 +650,13 @@ int main(int args, char **argv) {
 
         //TODO pick solutions to be copied
         vector<IndexValue> r = ranking(graphContainer, k, c);
+        if (bestNode == graphContainer[r[0].i][r[0].j][r[0].g]) {
+            terminationCount++;
+        } else {
+            terminationCount = 0;
+        }
+        bestNode = graphContainer[r[0].i][r[0].j][r[0].g];
+        myfile << temp << "\t" << r[0].value << "\n";
         for (int i = 0; i < r.size(); ++i) {
             float probability = (PI - float(i)) / PI;
             if (solutionToBeCopied.size() < copied) {
@@ -624,9 +707,15 @@ int main(int args, char **argv) {
             solutionToBeCross.push_back(secondNode);
 
             Node **flatArray1 = new Node *[taskContainer->getTasksSize()];
+            for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+                flatArray1[j] = nullptr;
+            }
             flattenToArray(flatArray1, firstNode);
 
             Node **flatArray2 = new Node *[taskContainer->getTasksSize()];
+            for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+                flatArray2[j] = nullptr;
+            }
             flattenToArray(flatArray2, secondNode);
 
             int split = rand() % (taskContainer->getTasksSize() - 2) + 1;
@@ -665,49 +754,90 @@ int main(int args, char **argv) {
                             vector<Node *> currentPath;
                             getPaths(&paths, &currentPath, node);
 
+                            //TODO rand from task or communication mutation;
+                            int taskComm = rand() % 2;
+
                             //TODO mutate
                             int option = rand() % 4 + 1;
-                            switch (option) {
-                                case 1: {
-                                    vector<Node *> mostexpensive = findMostExpensivePath(paths, taskContainer);
-                                    applyCheapestProcesses(mostexpensive, taskContainer);
-                                }
-                                    break;
-                                case 2: {
-                                    vector<Node *> critical = findCriticalPath(paths, taskContainer);
-                                    applyFastestProcesses(critical, taskContainer);
-                                }
-                                    break;
-                                case 3: {
-                                    Node *selected = findTaskWithMostExpensiveTK(taskContainer, node);
-                                    //find process with cheapest processing costs
-                                    int procId = getOptimalProcessForTask(selected, taskContainer);
-                                    selected->processId = procId;
-                                }
-                                    break;
-                                case 4: {
-                                    Node **fllatten = new Node *[taskContainer->getTasksSize()];
-                                    flattenToArray(fllatten, node);
+                            if (taskComm == 0) {
+                                switch (option) {
+                                    case 1: {
+                                        vector<Node *> mostexpensive = findMostExpensivePath(paths, taskContainer);
+                                        applyCheapestProcesses(mostexpensive, taskContainer);
+                                    }
+                                        break;
+                                    case 2: {
+                                        vector<Node *> critical = findCriticalPath(paths, taskContainer);
+                                        applyFastestProcesses(critical, taskContainer);
+                                    }
+                                        break;
+                                    case 3: {
+                                        Node *selected = findTaskWithMostExpensiveTK(taskContainer, node);
+                                        //find process with cheapest processing costs
+                                        int procId = getOptimalProcessForTask(selected, taskContainer);
+                                        selected->processId = procId;
+                                    }
+                                        break;
+                                    case 4: {
+                                        Node **fllatten = new Node *[taskContainer->getTasksSize()];
+                                        flattenToArray(fllatten, node);
 
-                                    groupByProcessesAndApply(fllatten, taskContainer);
-                                }
-                                    break;
+                                        groupByProcessesAndApply(fllatten, taskContainer);
+                                    }
+                                        break;
 
-                                default:
-                                    break;
+                                    default:
+                                        break;
+                                }
+                            } else {
+                                //losujemy wezel do zmiany
+                                Node **fllatten = new Node *[taskContainer->getTasksSize()];
+                                flattenToArray(fllatten, node);
+                                int nodeId = rand() % taskContainer->getTasksSize();
+                                switch (option) {
+                                    case 1: {
+                                        //najmniejszy wzrost kosztu
+                                        int commId = lowestIncreaseInCommunicationCost(node->finalCost, node,
+                                                                                       fllatten[nodeId],
+                                                                                       taskContainer);
+                                        fllatten[nodeId]->communicationChannelId = commId;
+                                    }
+                                        break;
+                                    case 2: {
+                                        //najszybsza transmisja
+                                        int commId = highestBandwitch(taskContainer);
+                                        fllatten[nodeId]->communicationChannelId = commId;
+                                    }
+                                        break;
+                                    case 3: {
+                                        //najrzdziej uzywany
+                                        int commId = rarestUsedCommunication(fllatten, taskContainer);
+                                        fllatten[nodeId]->communicationChannelId = commId;
+                                    }
+                                        break;
+                                    case 4: {
+                                        //minimalny koszt*przepustowosc
+                                        int commId = lowestCostBandwith(taskContainer);
+                                        fllatten[nodeId]->communicationChannelId = commId;
+                                    }
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+
+                                solutionToBeMutated.push_back(node);
                             }
-
-                            solutionToBeMutated.push_back(node);
                         }
                     }
                 }
             }
-        }
 
-        solutionToBeCopied.clear();
-        solutionToBeCross.clear();
-        solutionToBeMutated.clear();
+            solutionToBeCopied.clear();
+            solutionToBeCross.clear();
+            solutionToBeMutated.clear();
+        }
     }
-    cout << copied;
+    myfile.close();
 
 }

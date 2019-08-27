@@ -63,6 +63,10 @@ public:
     bool operator<(const Task &rhs) const {
         return id < rhs.id;
     }
+
+    W getWeight() const {
+        return weight;
+    }
 };
 
 #endif //TEST_1_TASK_H
