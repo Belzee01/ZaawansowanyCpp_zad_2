@@ -206,9 +206,6 @@ vector<IndexValue> ranking(vector<vector<vector<Node *>>> graphContainer, float 
     for (int i = 0; i < graphContainer.size(); ++i) {
         for (int j = 0; j < graphContainer[i].size(); ++j) {
             for (int g = 0; g < graphContainer[i][j].size(); ++g) {
-                Node *currentNode = graphContainer[i][j][g];
-                cout << graphContainer[i][j][g]->finalCost << endl;
-                cout << graphContainer[i][j][g]->finalTime << endl;
 
                 IndexValue F = {
                         i, j, g, k *
@@ -506,7 +503,8 @@ int rarestUsedCommunication(Node **nodes, TasksContainer<int, float, float> *tas
     }
 
     for (int i = 0; i < tasksContainer->getTasksSize(); ++i) {
-        commCount[nodes[i]->communicationChannelId] += 1;
+        if (nodes[i]->communicationChannelId != -1)
+            commCount[nodes[i]->communicationChannelId] += 1;
     }
 
     int commId = 0;
@@ -539,7 +537,7 @@ int main(int args, char **argv) {
     srand(static_cast <unsigned> (time(0)));
 
     ofstream myfile;
-    myfile.open("F_ranking.txt");
+    myfile.open("F_ranking.dat");
 
     auto *parser = new Parsers<float, float, int>();
     auto *taskContainer = parser->parse(argv[1]);
@@ -569,10 +567,10 @@ int main(int args, char **argv) {
     //User based data
     int alpha = 1;
 
-    float k = 0.5;
+    float k = 0.8;
     float c = 0.5;
 
-    float beta = 0.3, gamma = 0.4, theta = 0.3;
+    float beta = 0.1, gamma = 0.2;
 
     while (alpha < 0) {
         cout << "Pass positive alpha: ";
@@ -623,7 +621,10 @@ int main(int args, char **argv) {
     int terminationCount = 0;
     Node *bestNode = nullptr;
 
-    while (temp++ < 10000 && terminationCount < 100) {
+    myfile << "F" << "\t" << "cost" << "\t" << "time" << "\n";
+
+    while (temp++ < 100000 && terminationCount < 1000) {
+        cout << temp << endl;
         //TODO calculate cost and time for each graph
         for (int i = 0; i < alpha; ++i) {
             for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
@@ -656,7 +657,9 @@ int main(int args, char **argv) {
             terminationCount = 0;
         }
         bestNode = graphContainer[r[0].i][r[0].j][r[0].g];
-        myfile << temp << "\t" << r[0].value << "\n";
+
+        myfile << r[0].value << "\t" << bestNode->finalCost << "\t" << bestNode->finalTime << "\n";
+
         for (int i = 0; i < r.size(); ++i) {
             float probability = (PI - float(i)) / PI;
             if (solutionToBeCopied.size() < copied) {
@@ -755,11 +758,11 @@ int main(int args, char **argv) {
                             getPaths(&paths, &currentPath, node);
 
                             //TODO rand from task or communication mutation;
-                            int taskComm = rand() % 2;
+                            int taskComm = rand() % (2);
 
                             //TODO mutate
                             int option = rand() % 4 + 1;
-                            if (taskComm == 0) {
+                            if (taskComm > 0) {
                                 switch (option) {
                                     case 1: {
                                         vector<Node *> mostexpensive = findMostExpensivePath(paths, taskContainer);
@@ -792,6 +795,9 @@ int main(int args, char **argv) {
                             } else {
                                 //losujemy wezel do zmiany
                                 Node **fllatten = new Node *[taskContainer->getTasksSize()];
+                                for (int l = 0; l < taskContainer->getTasksSize(); ++l) {
+                                    fllatten[l] = nullptr;
+                                }
                                 flattenToArray(fllatten, node);
                                 int nodeId = rand() % taskContainer->getTasksSize();
                                 switch (option) {
@@ -832,11 +838,12 @@ int main(int args, char **argv) {
                     }
                 }
             }
-
-            solutionToBeCopied.clear();
-            solutionToBeCross.clear();
-            solutionToBeMutated.clear();
         }
+
+        solutionToBeCopied.clear();
+        solutionToBeCross.clear();
+        solutionToBeMutated.clear();
+
     }
     myfile.close();
 
