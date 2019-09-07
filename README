@@ -1,0 +1,37 @@
+Projekt został przygotowny w programie CLion w wersji 2019.1
+Jest kompilowany za pomocą CMake w wersji 3.13 (w pliku CMakeLists.txt można zmienić wersje na niższą np. 3.5.1 dla Ubuntu)
+Aby skompilować należy w folderze z plikami projketu wpisać:
+cmake .
+
+następnie:
+make
+
+a następnie samo uruchomienie zależnie od OS np. :
+./test_1 <ścieżka do pliku z grafem>
+
+przykladowo ./test_1 /Users/klipensk/Workspace/ZaawansowanyCpp_zad_2/GRAF.10.txt
+
+Jako dane wejsciowe uzytkownik przekazuje trzy parametry:
+alpha - okreslajace ilosc bazowych rozwiazan
+k - wspolczninik kosztu
+c - wspolczynnik czasu
+
+po podaniu tych trzech parametrow program rozpoczyna optymalizacje zadan
+Program poczatkowo wczytuje graf w reprezentacji listy sasiadujacej, a nastepnie graf jest zamieniany na reprezetnacje
+standardowego grafu zlozonego z wezlow, gdzie kazdy pojedynczy wezel zawiera liste wskaznikow do dzieci oraz liste wskaznikow
+do swoich rodzicow. Taka implementacja, byla konieczna w celu wyliczenia calkowitego czasu wykonania wszystkich zadan ukladu,
+gdzie kazde kolejne zadanie jest zalezne od czasu wykonania rodzica oraz zajmowanego przez nie procesu. Moja implementacja
+optymalizacji systemu jest przykladem algorytmu rafinacyjengo, gdzie uklad poczatkowy jest budowany przydzielajac
+zadniom procesy gdzie iloczyn kosztu i czasu wykonania na danym procesie jest najniższy.
+
+Parametry podzialu na trzy grupy: kopiowania, mieszania, mutacji niestety nie są podawane przez użytkownika,
+należy je modyfikować w kodzie.
+
+Po zakończeniu optymalizacji tworzone są dwa pliki z wynikami, pierwszy z nich to 'best_ranking_system.dat', ktory
+zawiera liste finalnych rozwiazan po optymalizacji, posortowanych od najlepszego wspolczynnika F az do najgorszego. Drugi
+plik to 'F_ranking.dat' ktory zawiera dane potrzene do narysowania wykresu zbieznosci, ktory mozna otrzymac za pomocą komendy:
+gnuplot --persist plot.plt
+gdzie plot.plt jest jednym z plikow w projekcie zawierajacym odpowiednie komendy gnuplot'a do rysowania wykresow.
+Wykres sklada sie z trzech linii, pierwsza z nich to linia zbieznosci wspolczynnika F rankingu, prezentujaca postep
+optymalizacji danego systemu w funkcji iteracji. Pozostale dwie linie to koszt i czas analogicznie w funkcji iteracji.
+Wykres pokazuje tylko najlepsze rozwiazanie optymalizacji systemu w danej iteracji.

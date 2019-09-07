@@ -532,17 +532,29 @@ int lowestCostBandwith(TasksContainer<int, float, float> *tasksContainer) {
     return commId;
 }
 
+vector<vector<Node *>> groupByProcesses(Node **nodes, TasksContainer<int, float, float> *tasksContainer) {
+    vector<vector<Node *>> res;
+    for (auto p : tasksContainer->getProcesses()) {
+        res.emplace_back();
+    }
+    //pogrupuj po processach
+    for (int i = 0; i < tasksContainer->getTasksSize(); ++i) {
+        res[nodes[i]->processId].push_back(nodes[i]);
+    }
+
+    return res;
+}
+
 int main(int args, char **argv) {
 
     srand(static_cast <unsigned> (time(0)));
-
-    ofstream myfile;
-    myfile.open("F_ranking.dat");
 
     auto *parser = new Parsers<float, float, int>();
     auto *taskContainer = parser->parse(argv[1]);
     taskContainer->printData();
 
+    ofstream myfile;
+    myfile.open("F_ranking.dat");
     cout << endl;
 
     auto tcMatrix = new TimesCostsMatrix(*taskContainer);
@@ -565,16 +577,28 @@ int main(int args, char **argv) {
     cost(taskContainer, levels);
 
     //User based data
-    int alpha = 1;
+    int alpha = -1;
 
-    float k = 0.8;
-    float c = 0.5;
+    float k = -0.1;
+    float c = -0.1;
 
-    float beta = 0.1, gamma = 0.2;
+    float beta = 0.1, gamma = 0.6;
 
     while (alpha < 0) {
         cout << "Pass positive alpha: ";
         cin >> alpha;
+        cout << endl;
+    }
+
+    while (k < 0) {
+        cout << "Pass positive k param: ";
+        cin >> k;
+        cout << endl;
+    }
+
+    while (c < 0) {
+        cout << "Pass positive c param: ";
+        cin >> c;
         cout << endl;
     }
 
@@ -623,7 +647,7 @@ int main(int args, char **argv) {
 
     myfile << "F" << "\t" << "cost" << "\t" << "time" << "\n";
 
-    while (temp++ < 100000 && terminationCount < 1000) {
+    while (temp++ < 100000 && terminationCount < 100) {
         cout << temp << endl;
         //TODO calculate cost and time for each graph
         for (int i = 0; i < alpha; ++i) {
@@ -648,22 +672,22 @@ int main(int args, char **argv) {
             }
         }
 
-
         //TODO pick solutions to be copied
         vector<IndexValue> r = ranking(graphContainer, k, c);
         if (bestNode == graphContainer[r[0].i][r[0].j][r[0].g]) {
             terminationCount++;
         } else {
             terminationCount = 0;
+            bestNode = graphContainer[r[0].i][r[0].j][r[0].g];
         }
-        bestNode = graphContainer[r[0].i][r[0].j][r[0].g];
 
         myfile << r[0].value << "\t" << bestNode->finalCost << "\t" << bestNode->finalTime << "\n";
 
         for (int i = 0; i < r.size(); ++i) {
             float probability = (PI - float(i)) / PI;
             if (solutionToBeCopied.size() < copied) {
-                if (probability >= uniformRand()) {
+                bool isCoppied = probability >= uniformRand();
+                if (isCoppied) {
                     solutionToBeCopied.push_back(graphContainer[r[i].i][r[i].j][r[i].g]);
                 }
             }
@@ -847,4 +871,35 @@ int main(int args, char **argv) {
     }
     myfile.close();
 
+    //TODO save best ranking to file
+    ofstream best_ranking_file;
+    best_ranking_file.open("best_ranking_system.dat");
+
+    for (int i = 0; i < alpha; ++i) {
+        for (int j = 0; j < taskContainer->getTasksSize(); ++j) {
+            for (int g = 0; g < taskContainer->getProcSize(); ++g) {
+                Node **fllatten = new Node *[taskContainer->getTasksSize()];
+                for (int l = 0; l < taskContainer->getTasksSize(); ++l) {
+                    fllatten[l] = nullptr;
+                }
+                flattenToArray(fllatten, graphContainer[i][j][g]);
+
+                vector<vector<Node *>> nodesByProcesses = groupByProcesses(fllatten, taskContainer);
+
+                for (int m = 0; m < taskContainer->getProcSize(); ++m) {
+                    best_ranking_file << "P" << m << ": ";
+                    for (auto node : nodesByProcesses[m]) {
+                        best_ranking_file << node->taskId << "(" << node->communicationChannelId << "), ";
+                    }
+                    best_ranking_file << "\n";
+                }
+                best_ranking_file << "koszt: " << graphContainer[i][j][g]->finalCost << "\n";
+                best_ranking_file << "czas: " << graphContainer[i][j][g]->finalTime;
+                best_ranking_file << "\n";
+                best_ranking_file << "\n";
+            }
+        }
+    }
+
+    best_ranking_file.close();
 }
